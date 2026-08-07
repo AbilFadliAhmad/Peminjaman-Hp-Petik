@@ -1,435 +1,204 @@
-{% extends 'layouts/base.html' %}
-
-{% block title %}
-Login • IZININ
-{% endblock %}
-
-{% block auth %}
-
-<div class="min-h-screen bg-slate-100">
-
-    <div class="grid min-h-screen lg:grid-cols-2">
-
-        <!-- ===================================================== -->
-        <!-- LEFT SIDE -->
-        <!-- ===================================================== -->
-
-<div class="relative hidden overflow-hidden lg:flex">
-
-    <!-- Background -->
-
-    <img
-        src="static/images/bg.jpg"
-        class="absolute inset-0 h-full w-full object-cover"
-        alt="Background">
-
-    <!-- Overlay -->
-
-    <div class="absolute inset-0 bg-black/30"></div>
-
-    <div class="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-800/75 to-slate-900/65"></div>
-
-    <!-- Decorative Circle -->
-
-    <div class="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-white/10 blur-3xl"></div>
-
-    <div class="absolute -right-32 bottom-0 h-[450px] w-[450px] rounded-full bg-blue-400/20 blur-3xl"></div>
-
-    <!-- Content -->
-
-    <div class="relative z-10 flex h-full flex-col justify-between p-14 text-white">
-
-        <!-- Logo -->
-
-        <div class="flex items-center gap-4">
-
-            <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/15 backdrop-blur-lg">
-
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-8 w-8"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 12l2 2 4-4M12 22C7 20 4 16 4 10V5l8-3 8 3v5c0 6-3 10-8 12z"/>
-
-                </svg>
-
-            </div>
-
-            <div>
-
-                <h1 class="text-3xl font-bold tracking-wide">
-
-                    IZININ
-
-                </h1>
-
-                <p class="text-blue-100">
-
-                    Smart Permission System
-
-                </p>
-
-            </div>
-
-        </div>
-
-        <!-- Hero -->
-
-        <div class="max-w-xl">
-
-            <h2 class="text-5xl font-bold leading-tight">
-
-                Digitalisasi
-                <br>
-
-                Perizinan Mahasantri
-
-            </h2>
-
-            <p class="mt-8 text-lg leading-8 text-blue-50/90">
-
-                Platform terintegrasi untuk mengelola seluruh proses
-                perizinan, peminjaman HP, dan izin keluar pondok
-                secara cepat, aman, serta terdokumentasi.
-
-            </p>
-
-            <!-- Feature -->
-
-            <div class="mt-10 grid gap-4">
-
-                <div class="flex items-center gap-3">
-
-                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
-
-                        ✓
-
-                    </div>
-
-                    <span class="text-lg">
-
-                        Peminjaman HP
-
-                    </span>
-
-                </div>
-
-                <div class="flex items-center gap-3">
-
-                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
-
-                        ✓
-
-                    </div>
-
-                    <span class="text-lg">
-
-                        Izin Keluar Pondok
-
-                    </span>
-
-                </div>
-
-                <div class="flex items-center gap-3">
-
-                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
-
-                        ✓
-
-                    </div>
-
-                    <span class="text-lg">
-
-                        Monitoring Pengembalian
-
-                    </span>
-
-                </div>
-
-                <div class="flex items-center gap-3">
-
-                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
-
-                        ✓
-
-                    </div>
-
-                    <span class="text-lg">
-
-                        Riwayat Perizinan Mahasantri
-
-                    </span>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- Footer -->
-
-        <div class="text-sm text-blue-100/80">
-
-            © 2026 IZININ • Smart Permission System
-
-        </div>
-
+{% extends 'layouts/base.html' %} {% block title %} Login • IZININ {% endblock %} {% block auth %}
+<div class="flex h-screen w-full overflow-hidden bg-slate-50">
+  <!-- ===================================================== -->
+  <!-- LEFT PANEL -->
+  <!-- ===================================================== -->
+  <div id="loginPanel" class="relative flex w-full flex-col justify-center px-8 opacity-0 translate-y-6 lg:w-[45%] lg:px-24">
+    <!-- Top Left Logo Pill -->
+    <div class="absolute left-8 top-8 lg:left-12 lg:top-10">
+      <div class="flex items-center justify-center rounded-full border border-blue-200 bg-blue-50/50 px-6 py-2 text-blue-700 shadow-sm">
+        <span class="text-sm font-bold tracking-wide">IZININ</span>
+      </div>
     </div>
 
-</div>
-        <!-- ===================================================== -->
-        <!-- RIGHT SIDE -->
-        <!-- ===================================================== -->
-
-        <div class="flex items-center justify-center px-6 py-12">
-
-            <div class="w-full max-w-md">
-
-                <!-- Mobile Logo -->
-
-                <div class="mb-10 text-center lg:hidden">
-
-                    <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-600 text-white shadow-lg">
-
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-10 w-10"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 12l2 2 4-4M12 22C7 20 4 16 4 10V5l8-3 8 3v5c0 6-3 10-8 12z"/>
-
-                        </svg>
-
-                    </div>
-
-                    <h1 class="mt-5 text-3xl font-bold text-slate-800">
-
-                        IZININ
-
-                    </h1>
-
-                    <p class="mt-2 text-slate-500">
-
-                        Smart Permission System
-
-                    </p>
-
-                </div>
-                <div class="rounded-[32px] border border-white/60 bg-white/90 p-10 shadow-2xl backdrop-blur-xl">
-
-    <div class="mb-8">
-
-        <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-700">
-
-            Welcome Back
-
-        </span>
-
-        <h2 class="mt-5 text-4xl font-bold text-slate-800">
-
-            Masuk ke IZININ
-
-        </h2>
-
-        <p class="mt-3 leading-7 text-slate-500">
-
-            Gunakan akun Anda untuk mengakses sistem
-            perizinan mahasantri.
-
-        </p>
-
+    <!-- Heading -->
+    <div class="mb-10 w-full text-center mt-12">
+      <h2 class="text-3xl font-bold tracking-tight text-slate-800">Selamat Datang</h2>
+      <p class="mt-2 text-sm text-slate-500">Silakan login untuk mengakses sistem perizinan mahasantri.</p>
     </div>
 
-    {% include 'partials/flash.html' %}
+    <!-- FORM -->
+    <form id="loginForm" method="POST" action="{{ url_for('login') }}" class="mx-auto w-full max-w-sm space-y-6">
+      <!-- Username -->
+      <div>
+        <label class="mb-2 ml-4 block text-xs font-semibold text-slate-600">Username</label>
+        <input
+          type="text"
+          name="username"
+          required
+          autofocus
+          autocomplete="username"
+          value="{{ request.form.get('username','') }}"
+          class="w-full rounded-full border border-slate-200 bg-white px-6 py-4 text-sm text-slate-700 shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+        />
+      </div>
 
-    <form
-        id="loginForm"
-        method="POST"
-        action="{{ url_for('login') }}"
-        class="space-y-6">
-
-        <!-- Username -->
-
-        <div>
-
-            <label class="mb-2 block text-sm font-medium text-slate-700">
-
-                Username
-
-            </label>
-
-            <div class="relative">
-
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M5.121 17.804A9 9 0 1118.36 4.64M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-
-                </svg>
-
-                <input
-                    type="text"
-                    name="username"
-                    required
-                    autofocus
-                    autocomplete="username"
-                    value="{{ request.form.get('username','') }}"
-                    placeholder="Masukkan username"
-                    class="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-12 pr-4 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
-
-            </div>
-
+      <!-- Password -->
+      <div>
+        <label class="mb-2 ml-4 block text-xs font-semibold text-slate-600">Password</label>
+        <div class="relative">
+          <input
+            id="password"
+            type="password"
+            name="password"
+            required
+            autocomplete="current-password"
+            class="w-full rounded-full border border-slate-200 bg-white py-4 pl-6 pr-12 text-sm text-slate-700 shadow-sm outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+          />
+          <button id="togglePassword" type="button" class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-blue-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </button>
         </div>
+      </div>
 
-        <!-- Password -->
-
-        <div>
-
-            <label class="mb-2 block text-sm font-medium text-slate-700">
-
-                Password
-
-            </label>
-
-            <div class="relative">
-
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 15v2m6-6V9a6 6 0 10-12 0v2m-1 0h14v9H5z"/>
-
-                </svg>
-
-                <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    required
-                    autocomplete="current-password"
-                    placeholder="Masukkan password"
-                    class="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-12 pr-12 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
-
-                <button
-                    id="togglePassword"
-                    type="button"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700">
-
-                    <svg id="eyeIcon"
-                         xmlns="http://www.w3.org/2000/svg"
-                         class="h-5 w-5"
-                         fill="none"
-                         viewBox="0 0 24 24"
-                         stroke="currentColor">
-
-                        <path stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-
-                        <path stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5
-                                 c4.478 0 8.268 2.943 9.542 7
-                                 -1.274 4.057-5.064 7-9.542 7
-                                 -4.477 0-8.268-2.943-9.542-7z"/>
-
-                    </svg>
-
-                </button>
-
-            </div>
-
-        </div>
-
-        <button
-            id="loginButton"
-            type="submit"
-            class="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 py-3.5 font-semibold text-white shadow-lg transition hover:scale-[1.01] hover:shadow-xl">
-
-            <span id="loginText">
-
-                Masuk ke Dashboard
-
-            </span>
-
-        </button>
-
+      <!-- Button -->
+      <button
+        id="loginButton"
+        type="submit"
+        class="mt-4 flex w-full items-center justify-center rounded-full bg-blue-600 py-4 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-xl"
+      >
+        <span id="loginText">Masuk ke Dashboard</span>
+      </button>
     </form>
 
-    <div class="mt-8 border-t pt-6 text-center">
+    <!-- Footer -->
+    <div class="absolute bottom-8 left-8 right-8 flex justify-between text-xs font-medium text-slate-400 lg:left-12 lg:right-12">
+      <p>© 2026 IZININ</p>
+      <button id="openTerms" type="button" class="transition hover:text-blue-600 underline underline-offset-2">Terms & Conditions</button>
+    </div>
+  </div>
 
-        <p class="text-sm text-slate-500">
+  <!-- ===================================================== -->
+  <!-- RIGHT PANEL -->
+  <!-- ===================================================== -->
+  <div id="heroPanel" class="hidden h-full p-4 lg:block lg:w-[55%] opacity-0 translate-x-8">
+    <div class="relative h-full w-full overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-2xl">
+      <!-- Background Image -->
+      <img src="static/images/bg.jpg" alt="Background" class="absolute inset-0 h-full w-full object-cover" />
 
-            © 2026 IZININ
+      <!-- Gradient Overlay (Difilter biru dan digelapkan sedikit saja) -->
+      <div class="absolute inset-0 bg-gradient-to-br from-blue-900/50 via-blue-800/40 to-slate-900/60"></div>
 
-        </p>
+      <!-- Glassmorphism Floating Decoration -->
+      <div class="absolute left-10 top-20 rounded-2xl border border-blue-400/20 bg-blue-600/80 px-6 py-4 shadow-2xl backdrop-blur-md">
+        <p class="text-sm font-bold text-white">Sistem Perizinan Mahasantri</p>
+        <p class="mt-1 text-xs text-blue-100">Tepat Waktu & Terintegrasi</p>
+      </div>
 
-        <p class="mt-1 text-xs text-slate-400">
+      <!-- Main Floating Card -->
+      <div class="absolute bottom-16 left-1/2 w-4/5 -translate-x-1/2 rounded-[2rem] border border-white/20 bg-white/10 p-8 backdrop-blur-xl shadow-2xl">
+        <span class="mb-4 inline-block rounded-full bg-blue-500/40 px-3 py-1 text-xs font-semibold tracking-wider text-blue-100"> DIGITAL PLATFORM </span>
+        <h3 class="text-2xl font-bold text-white leading-tight">Kelola perizinan dengan<br />mudah dan cepat.</h3>
+        <p class="mt-3 text-sm text-slate-200 leading-relaxed">Kelola seluruh proses peminjaman HP, izin keluar pondok, dan monitoring keterlambatan dalam satu dasbor yang cepat, aman, dan real-time.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-            Smart Permission System
-
-        </p>
-
+<!-- MODAL TERMS & CONDITIONS -->
+<div id="termsModal" class="fixed inset-0 z-50 flex hidden items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm transition-opacity duration-300">
+  <div class="relative w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl transition-all duration-300 sm:p-8">
+    <!-- Header Modal -->
+    <div class="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
+      <h3 class="text-lg font-bold text-slate-800">Syarat & Ketentuan (IZININ)</h3>
+      <button id="closeTerms" type="button" class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 transition hover:bg-slate-200 hover:text-slate-600">✕</button>
     </div>
 
-</div>
-            </div>
-
-        </div>
-
+    <!-- Isi Aturan -->
+    <div class="max-h-[55vh] space-y-4 overflow-y-auto pr-2 text-xs leading-relaxed text-slate-600">
+      <p><strong>1. Tanggung Jawab Akun:</strong> Kredensial login bersifat pribadi. Segala aktivitas perizinan yang dilakukan melalui akun ini menjadi tanggung jawab penuh pemilik akun.</p>
+      <p><strong>2. Ketepatan Waktu:</strong> Mahasantri wajib kembali tepat waktu sesuai batas jam perizinan. Keterlambatan akan terdeteksi dan tercatat otomatis oleh sistem.</p>
+      <p><strong>3. Penggunaan HP/Fasilitas:</strong> Peminjaman HP dan fasilitas pondok harus sesuai prosedur operasional serta diserahkan kembali tepat waktu.</p>
+      <p><strong>4. Pencatatan Log:</strong> Sistem mencatat riwayat perizinan dan *check-in/out* untuk kepentingan evaluasi pengasuhan dan keamanan pondok.</p>
     </div>
 
+    <!-- Tombol Tutup -->
+    <div class="mt-6">
+      <button id="acceptTerms" type="button" class="w-full rounded-full bg-blue-600 py-3 text-xs font-bold text-white transition hover:bg-blue-700">Saya Mengerti</button>
+    </div>
+  </div>
 </div>
+<style>
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes fadeRight {
+    from {
+      opacity: 0;
+      transform: translateX(40px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .fade-up {
+    animation: fadeUp 0.8s ease forwards;
+  }
+
+  .fade-right {
+    animation: fadeRight 0.9s ease forwards;
+    animation-delay: 0.2s;
+  }
+</style>
 
 <script>
+  window.addEventListener("load", () => {
+    // Animasi masuk
+    document.getElementById("loginPanel")?.classList.add("fade-up");
+    document.getElementById("heroPanel")?.classList.add("fade-right");
 
-const password = document.getElementById("password");
-const toggle2 = document.getElementById("togglePassword");
+    // Fungsionalitas Show/Hide Password
+    const togglePassword = document.getElementById("togglePassword");
+    const passwordInput = document.getElementById("password");
 
-toggle2.addEventListener("click", () => {
+    if (togglePassword && passwordInput) {
+      togglePassword.addEventListener("click", function () {
+        // Cek tipe input saat ini
+        const isPassword = passwordInput.getAttribute("type") === "password";
 
-    password.type =
-        password.type === "password"
-            ? "text"
-            : "password";
+        // Ubah tipe input
+        passwordInput.setAttribute("type", isPassword ? "text" : "password");
 
-    toggle2.textContent =
-        password.type === "password"
-            ? "👁"
-            : "🙈";
+        // Ubah styling ikon agar user tahu statusnya sedang terlihat
+        if (isPassword) {
+          togglePassword.classList.add("text-blue-600");
+          togglePassword.classList.remove("text-slate-400");
+        } else {
+          togglePassword.classList.add("text-slate-400");
+          togglePassword.classList.remove("text-blue-600");
+        }
+      });
+    }
+  });
 
-});
+  // Modal Terms & Conditions
+  const termsModal = document.getElementById("termsModal");
+  const openTerms = document.getElementById("openTerms");
+  const closeTerms = document.getElementById("closeTerms");
+  const acceptTerms = document.getElementById("acceptTerms");
 
+  const toggleModal = (show) => termsModal?.classList.toggle("hidden", !show);
+
+  openTerms?.addEventListener("click", () => toggleModal(true));
+  closeTerms?.addEventListener("click", () => toggleModal(false));
+  acceptTerms?.addEventListener("click", () => toggleModal(false));
+
+  // Tutup modal jika klik di luar area kotak putih
+  termsModal?.addEventListener("click", (e) => {
+    if (e.target === termsModal) toggleModal(false);
+  });
 </script>
-
 {% endblock %}
