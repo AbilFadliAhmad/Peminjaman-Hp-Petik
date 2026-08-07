@@ -1,92 +1,438 @@
 {% extends 'layouts/base.html' %}
 
 {% block title %}
-Login - Sistem Peminjaman HP
+Login • IZININ
 {% endblock %}
 
 {% block auth %}
 
-<div class="w-full max-w-md">
+<div class="min-h-screen bg-slate-100">
 
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+    <div class="grid min-h-screen lg:grid-cols-2">
+
+        <!-- ===================================================== -->
+        <!-- LEFT SIDE -->
+        <!-- ===================================================== -->
+<!-- ===================================================== -->
+<!-- LEFT SIDE -->
+<!-- ===================================================== -->
+
+<div class="relative hidden overflow-hidden lg:flex">
+
+    <!-- Background -->
+
+    <img
+        src="static/images/bg.jpg"
+        class="absolute inset-0 h-full w-full object-cover"
+        alt="Background">
+
+    <!-- Overlay -->
+
+    <div class="absolute inset-0 bg-black/30"></div>
+
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-blue-700/65 to-slate-900/90"></div>
+
+    <!-- Decorative Circle -->
+
+    <div class="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-white/10 blur-3xl"></div>
+
+    <div class="absolute -right-32 bottom-0 h-[450px] w-[450px] rounded-full bg-blue-400/20 blur-3xl"></div>
+
+    <!-- Content -->
+
+    <div class="relative z-10 flex h-full flex-col justify-between p-14 text-white">
 
         <!-- Logo -->
-        <div class="text-center mb-8">
 
-            <div class="w-20 h-20 mx-auto rounded-full bg-blue-600 flex items-center justify-center text-4xl text-white">
+        <div class="flex items-center gap-4">
 
-                📱
+            <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/15 backdrop-blur-lg">
+
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-8 w-8"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12l2 2 4-4M12 22C7 20 4 16 4 10V5l8-3 8 3v5c0 6-3 10-8 12z"/>
+
+                </svg>
 
             </div>
 
-            <h1 class="mt-5 text-3xl font-bold text-gray-800">
-                Peminjaman HP
-            </h1>
+            <div>
 
-            <p class="mt-2 text-gray-500">
-                Silakan login menggunakan akun Anda
-            </p>
+                <h1 class="text-3xl font-bold tracking-wide">
+
+                    IZININ
+
+                </h1>
+
+                <p class="text-blue-100">
+
+                    Smart Permission System
+
+                </p>
+
+            </div>
 
         </div>
 
-        {% include 'partials/flash.html' %}
+        <!-- Hero -->
 
-        <form method="POST"
-              action="{{ url_for('login') }}"
-              class="space-y-5">
+        <div class="max-w-xl">
 
-            <!-- Username -->
-            <div>
+            <h2 class="text-5xl font-bold leading-tight">
 
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                Digitalisasi
+                <br>
 
-                    Username
+                Perizinan Mahasantri
 
-                </label>
+            </h2>
+
+            <p class="mt-8 text-lg leading-8 text-blue-50/90">
+
+                Platform terintegrasi untuk mengelola seluruh proses
+                perizinan, peminjaman HP, dan izin keluar pondok
+                secara cepat, aman, serta terdokumentasi.
+
+            </p>
+
+            <!-- Feature -->
+
+            <div class="mt-10 grid gap-4">
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+
+                        ✓
+
+                    </div>
+
+                    <span class="text-lg">
+
+                        Peminjaman HP
+
+                    </span>
+
+                </div>
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+
+                        ✓
+
+                    </div>
+
+                    <span class="text-lg">
+
+                        Izin Keluar Pondok
+
+                    </span>
+
+                </div>
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+
+                        ✓
+
+                    </div>
+
+                    <span class="text-lg">
+
+                        Monitoring Pengembalian
+
+                    </span>
+
+                </div>
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+
+                        ✓
+
+                    </div>
+
+                    <span class="text-lg">
+
+                        Riwayat Perizinan Mahasantri
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+
+        <div class="text-sm text-blue-100/80">
+
+            © 2026 IZININ • Smart Permission System
+
+        </div>
+
+    </div>
+
+</div>
+        <!-- ===================================================== -->
+        <!-- RIGHT SIDE -->
+        <!-- ===================================================== -->
+
+        <div class="flex items-center justify-center px-6 py-12">
+
+            <div class="w-full max-w-md">
+
+                <!-- Mobile Logo -->
+
+                <div class="mb-10 text-center lg:hidden">
+
+                    <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-600 text-white shadow-lg">
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-10 w-10"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 12l2 2 4-4M12 22C7 20 4 16 4 10V5l8-3 8 3v5c0 6-3 10-8 12z"/>
+
+                        </svg>
+
+                    </div>
+
+                    <h1 class="mt-5 text-3xl font-bold text-slate-800">
+
+                        IZININ
+
+                    </h1>
+
+                    <p class="mt-2 text-slate-500">
+
+                        Smart Permission System
+
+                    </p>
+
+                </div>
+                <div class="rounded-[32px] border border-white/60 bg-white/90 p-10 shadow-2xl backdrop-blur-xl">
+
+    <div class="mb-8">
+
+        <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-700">
+
+            Welcome Back
+
+        </span>
+
+        <h2 class="mt-5 text-4xl font-bold text-slate-800">
+
+            Masuk ke IZININ
+
+        </h2>
+
+        <p class="mt-3 leading-7 text-slate-500">
+
+            Gunakan akun Anda untuk mengakses sistem
+            perizinan mahasantri.
+
+        </p>
+
+    </div>
+
+    {% include 'partials/flash.html' %}
+
+    <form
+        id="loginForm"
+        method="POST"
+        action="{{ url_for('login') }}"
+        class="space-y-6">
+
+        <!-- Username -->
+
+        <div>
+
+            <label class="mb-2 block text-sm font-medium text-slate-700">
+
+                Username
+
+            </label>
+
+            <div class="relative">
+
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5.121 17.804A9 9 0 1118.36 4.64M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+
+                </svg>
 
                 <input
                     type="text"
                     name="username"
-                    placeholder="Masukkan username"
                     required
                     autofocus
                     autocomplete="username"
-                    value="{{ request.form.get('username', '') }}"
-                    class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition">
+                    value="{{ request.form.get('username','') }}"
+                    placeholder="Masukkan username"
+                    class="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-12 pr-4 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
 
             </div>
 
-            <!-- Password -->
-            <div>
+        </div>
 
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+        <!-- Password -->
 
-                    Password
+        <div>
 
-                </label>
+            <label class="mb-2 block text-sm font-medium text-slate-700">
+
+                Password
+
+            </label>
+
+            <div class="relative">
+
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 15v2m6-6V9a6 6 0 10-12 0v2m-1 0h14v9H5z"/>
+
+                </svg>
 
                 <input
+                    id="password"
                     type="password"
                     name="password"
-                    placeholder="Masukkan password"
                     required
                     autocomplete="current-password"
-                    class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition">
+                    placeholder="Masukkan password"
+                    class="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-12 pr-12 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+
+                <button
+                    id="togglePassword"
+                    type="button"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700">
+
+                    <svg id="eyeIcon"
+                         xmlns="http://www.w3.org/2000/svg"
+                         class="h-5 w-5"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5
+                                 c4.478 0 8.268 2.943 9.542 7
+                                 -1.274 4.057-5.064 7-9.542 7
+                                 -4.477 0-8.268-2.943-9.542-7z"/>
+
+                    </svg>
+
+                </button>
 
             </div>
 
-            <!-- Tombol Login -->
-            <button
-                type="submit"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg py-3 transition">
+        </div>
 
-                Login
+        <button
+            id="loginButton"
+            type="submit"
+            class="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 py-3.5 font-semibold text-white shadow-lg transition hover:scale-[1.01] hover:shadow-xl">
 
-            </button>
+            <span id="loginText">
 
-        </form>
+                Masuk ke Dashboard
+
+            </span>
+
+        </button>
+
+    </form>
+
+    <div class="mt-8 border-t pt-6 text-center">
+
+        <p class="text-sm text-slate-500">
+
+            © 2026 IZININ
+
+        </p>
+
+        <p class="mt-1 text-xs text-slate-400">
+
+            Smart Permission System
+
+        </p>
+
     </div>
 
 </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const password = document.getElementById("password");
+const toggle2 = document.getElementById("togglePassword");
+
+toggle2.addEventListener("click", () => {
+
+    password.type =
+        password.type === "password"
+            ? "text"
+            : "password";
+
+    toggle2.textContent =
+        password.type === "password"
+            ? "👁"
+            : "🙈";
+
+});
+
+</script>
 
 {% endblock %}

@@ -92,7 +92,7 @@ SIDEBAR_MENUS = {
         {
             "title": "Pengajuan Keluar",
             "endpoint": "pengasuhan_permits",
-            "icon": "📋"
+            "icon": "🚪"
         },
         {
             "title": "Santri",
@@ -1941,17 +1941,41 @@ def pengasuhan_permits():
         settings=settings
     )
 
-@app.route("/pengasuhan/permit/settings")
-@login_required
-@role_required(ROLE_PENGASUHAN)
-def pengasuhan_permit_settings():
-    print('oke')
-
-@app.route("/pengasuhan/permit/update-settings")
+@app.post("/pengasuhan/permit/update-settings")
 @login_required
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_permit_update_settings():
-    print('oke')
+    hours = request.form.get(
+        "default_return_hours",
+        ""
+    ).strip()
+    if not hours.isdigit() or int(hours) <= 0:
+        flash(
+            "Batas waktu default tidak valid.",
+            "warning"
+        )
+
+        return redirect(
+            url_for("keluar_pondok.admin_requests")
+        )
+    execute(
+        """
+        UPDATE exit_permit_settings
+        SET
+            default_return_hours=%s
+        WHERE id=1
+        """,
+        (
+            int(hours),
+        )
+    )
+    flash(
+        "Pengaturan default batas waktu kembali berhasil diperbarui.",
+        "success"
+    )
+    return redirect(
+        url_for("pengasuhan_permits")
+    )
 
 @app.route("/pengasuhan/permit/<int:permit_id>")
 @login_required

@@ -10,86 +10,116 @@
 
     <!-- Header -->
 
-    <div class="flex h-16 items-center justify-center border-b">
+    <!-- Header -->
 
-        <div class="flex items-center gap-3">
+<div class="flex h-16 items-center border-b border-slate-200 bg-gradient-to-r from-blue-600 to-blue-700 px-5">
 
-            <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-xl text-white shadow">
+    <div class="flex items-center gap-3">
 
-                📱
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white">
 
-            </div>
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="h-5 w-5"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor">
 
-            <div>
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4M12 22C7 20 4 16 4 10V5l8-3 8 3v5c0 6-3 10-8 12z"/>
 
-                <h1 class="text-lg font-bold tracking-wide text-slate-800">
+            </svg>
 
-                    PINJAMIN
+        </div>
 
-                </h1>
+        <div>
 
-                <p class="text-xs text-slate-500">
+            <h1 class="text-lg font-bold text-white">
 
-                    Sistem Peminjaman HP
+                IZININ
 
-                </p>
+            </h1>
 
-            </div>
+            <p class="text-[11px] uppercase tracking-wide text-blue-100">
+
+                Smart Permission System
+
+            </p>
 
         </div>
 
     </div>
 
+</div>
+
     <!-- Menu -->
 
-    <nav class="flex-1 space-y-2 overflow-y-auto p-4">
+    <!-- Menu -->
 
-        {% for menu in menus %}
+<nav class="flex-1 space-y-2 overflow-y-auto p-4">
 
-        <a
-            href="{{ url_for(menu.endpoint) }}"
-            class="
-            flex items-center gap-3 rounded-xl px-4 py-3 transition
+    {% for menu in menus %}
 
-            {% if current_endpoint == menu.endpoint %}
+    <a
+        href="{{ url_for(menu.endpoint) }}"
+        class="
+        group flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-200
 
-                bg-blue-600 text-white shadow-md
+        {% if current_endpoint == menu.endpoint %}
 
-            {% else %}
+            bg-blue-600 text-white shadow-lg shadow-blue-100
 
-                text-slate-700 hover:bg-slate-100
+        {% else %}
 
-            {% endif %}
-            ">
+            text-slate-700 hover:bg-slate-100 hover:translate-x-1
 
-            <span class="text-xl">
+        {% endif %}
+        ">
 
-                {{ menu.icon }}
+        <span class="text-xl transition group-hover:scale-110">
 
-            </span>
+            {{ menu.icon }}
 
-            <span class="font-medium">
+        </span>
 
-                {{ menu.title }}
+        <span class="font-medium">
 
-            </span>
+            {{ menu.title }}
 
-        </a>
+        </span>
 
-        {% endfor %}
+    </a>
 
-    </nav>
+    {% endfor %}
 
-    <div class="border-t p-4">
+</nav>
 
-        <a
-            href="{{ url_for('logout') }}"
-            class="flex items-center justify-center rounded-xl bg-red-500 py-3 font-medium text-white transition hover:bg-red-600">
+    <div class="border-t border-slate-200 p-4">
 
-            Logout
+    <a
+        href="{{ url_for('logout') }}"
+        class="flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 py-3 font-medium text-red-600 transition hover:bg-red-100">
 
-        </a>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             class="h-5 w-5"
+             fill="none"
+             viewBox="0 0 24 24"
+             stroke="currentColor">
 
-    </div>
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1"/>
+
+        </svg>
+
+        Keluar
+
+    </a>
+
+</div>
 
 </aside>
