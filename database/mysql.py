@@ -208,9 +208,7 @@ def initialize_database():
     # ============================
 
     cursor.execute("SELECT COUNT(*) total FROM users")
-
     total = cursor.fetchone()["total"]
-
     if total == 0:
 
         users = [
@@ -249,6 +247,19 @@ def initialize_database():
         """, users)
 
         print("Dummy User berhasil dibuat.")
+
+    # ============================
+    # Dummy Permit
+    # ============================
+    
+    cursor.execute("SELECT COUNT(*) total FROM exit_permit_settings")
+    total = cursor.fetchone()["total"]
+
+    if total == 0:
+        cursor.execute("""
+               INSERT INTO exit_permit_settings(id, default_return_hours)
+               VALUES (1, 4)
+               """)
 
     db.close()
     print("Database berhasil diinisialisasi.")

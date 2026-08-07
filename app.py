@@ -1780,15 +1780,6 @@ def approve_request(request_id):
             url_for("pengasuhan_dashboard")
         )
 
-    if data["status"] != STATUS_PENDING:
-        flash(
-            "Pengajuan sudah diproses.",
-            "warning"
-        )
-        return redirect(
-            url_for("pengasuhan_dashboard")
-        )
-
     approve_borrow(
         request_id,
         current_user()["id"],
@@ -1816,15 +1807,6 @@ def reject_request(request_id):
         flash(
             "Pengajuan tidak ditemukan.",
             "danger"
-        )
-        return redirect(
-            url_for("pengasuhan_dashboard")
-        )
-
-    if data["status"] != STATUS_PENDING:
-        flash(
-            "Pengajuan sudah diproses.",
-            "warning"
         )
         return redirect(
             url_for("pengasuhan_dashboard")
@@ -1956,7 +1938,7 @@ def pengasuhan_permit_update_settings():
         )
 
         return redirect(
-            url_for("keluar_pondok.admin_requests")
+            url_for("pengasuhan_permits")
         )
     execute(
         """

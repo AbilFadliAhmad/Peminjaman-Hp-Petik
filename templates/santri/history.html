@@ -97,7 +97,6 @@
               <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Alasan</th>
 
               <th class="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
-              <th class="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Aksi</th>
             </tr>
           </thead>
 
@@ -116,18 +115,6 @@
               </td>
 
               <td class="px-4 py-4 text-center">{{ item.status|status_badge }}</td>
-
-              <td class="px-4 py-4">
-                <div class="flex justify-center">
-                  <a href="{{ url_for('pengasuhan_request_detail', request_id=item.id) }}" class="inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0A9 9 0 113 12a9 9 0 0118 0z" />
-                    </svg>
-
-                    Detail
-                  </a>
-                </div>
-              </td>
             </tr>
             {% endfor %} {% else %}
 

@@ -359,37 +359,119 @@
     {% endif %}
   </div>
 </div>
-
-{% if data.status == "PENDING" %} {% if current_user_role == "pengasuhan" %}
+{% if current_user_role == "pengasuhan" %}
 
 <div class="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
-  <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
-    <h2 class="text-lg font-semibold text-slate-800">Proses Persetujuan</h2>
 
-    <p class="mt-1 text-sm text-slate-500">Berikan keputusan terhadap pengajuan peminjaman ini.</p>
-  </div>
+    <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
 
-  <form method="POST">
-    <div class="space-y-6 p-6">
-      <div>
-        <label for="pengasuhan_note" class="mb-2 block text-sm font-medium text-slate-700"> Catatan Pengasuhan </label>
+        <h2 class="text-lg font-semibold text-slate-800">
 
-        <textarea
-          id="pengasuhan_note"
-          name="pengasuhan_note"
-          rows="5"
-          placeholder="Tambahkan catatan untuk mahasantri..."
-          class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-        ></textarea>
-      </div>
+            Keputusan Pengajuan
 
-      <div class="flex justify-end gap-3">
-        <button type="submit" formaction="{{ url_for('reject_request', request_id=data.id) }}" class="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-red-700">Tolak</button>
+        </h2>
 
-        <button type="submit" formaction="{{ url_for('approve_request', request_id=data.id) }}" class="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700">Setujui</button>
-      </div>
+        <p class="mt-1 text-sm text-slate-500">
+
+            Berikan atau ubah keputusan terhadap pengajuan ini.
+
+        </p>
+
     </div>
-  </form>
+
+    <form
+        method="POST"
+        id="decisionForm">
+
+        <div class="space-y-6 p-6">
+
+            <div>
+
+                <label
+                    for="pengasuhan_note"
+                    class="mb-2 block text-sm font-medium text-slate-700">
+
+                    Catatan Pengasuhan
+
+                </label>
+
+                <textarea
+                    id="pengasuhan_note"
+                    name="pengasuhan_note"
+                    rows="5"
+                    class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                >{{ data.pengasuhan_note or "" }}</textarea>
+
+            </div>
+
+            {% if data.status == "APPROVED" %}
+
+            <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+
+                <p class="font-semibold text-emerald-700">
+
+                    Pengajuan ini telah disetujui.
+
+                </p>
+
+                <p class="mt-1 text-sm text-emerald-600">
+
+                    Anda masih dapat mengubah keputusan apabila diperlukan.
+
+                </p>
+
+            </div>
+
+            {% elif data.status == "REJECTED" %}
+
+            <div class="rounded-2xl border border-red-200 bg-red-50 p-4">
+
+                <p class="font-semibold text-red-700">
+
+                    Pengajuan ini telah ditolak.
+
+                </p>
+
+                <p class="mt-1 text-sm text-red-600">
+
+                    Anda masih dapat mengubah keputusan apabila diperlukan.
+
+                </p>
+
+            </div>
+
+            {% endif %}
+
+            <div class="flex justify-end gap-3">
+
+                <button
+                    type="submit"
+                    formaction="{{ url_for('reject_request', request_id=data.id) }}"
+                    class="decision-btn rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-red-700"
+                    data-title="Tolak Pengajuan?"
+                    data-text="Pengajuan akan ditolak.">
+
+                    Tolak
+
+                </button>
+
+                <button
+                    type="submit"
+                    formaction="{{ url_for('approve_request', request_id=data.id) }}"
+                    class="decision-btn rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700"
+                    data-title="Setujui Pengajuan?"
+                    data-text="Pengajuan akan disetujui.">
+
+                    Setujui
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
 </div>
 
 {% else %}
@@ -406,4 +488,54 @@
   </div>
 </div>
 
-{% endif %} {% endif %} {% endblock %}
+{% endif %}
+
+{% endblock %}
+
+{% block script %}
+<script>
+    document.querySelectorAll(".decision-btn").forEach(button => {
+
+    button.addEventListener("click", function(e){
+
+        e.preventDefault();
+
+        const form = this.form;
+
+        const action = this.getAttribute("formaction");
+
+        Swal.fire({
+
+            title: this.dataset.title,
+
+            text: this.dataset.text,
+
+            icon: "question",
+
+            showCancelButton: true,
+
+            confirmButtonColor: "#2563eb",
+
+            cancelButtonColor: "#64748b",
+
+            confirmButtonText: "Ya, Lanjutkan",
+
+            cancelButtonText: "Batal"
+
+        }).then(result => {
+
+            if(result.isConfirmed){
+
+                form.action = action;
+
+                form.submit();
+
+            }
+
+        });
+
+    });
+
+});
+</script>
+{% endblock %}
