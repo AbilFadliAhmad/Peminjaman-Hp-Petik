@@ -1,0 +1,148 @@
+{% extends 'layouts/base.html' %} {% block title %} Perizinan Keluar Pondok {% endblock %} {% block content %}
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <p class="text-sm font-medium text-blue-600">Perizinan Keluar Pondok</p>
+      <h1 class="text-2xl font-bold sm:text-3xl">Pengajuan Izin Keluar Santri</h1>
+      <p class="text-gray-500 mt-1">Kelola seluruh pengajuan izin keluar pondok santri.</p>
+    </div>
+  </div>
+
+  <!-- Panel Pengaturan Default -->
+  <div class="rounded-3xl border border-indigo-200 bg-indigo-50 p-6">
+    <div class="flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex items-start gap-4">
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-2xl">⏱️</div>
+        <div>
+          <h2 class="font-semibold text-indigo-900">Default Batas Waktu Wajib Kembali</h2>
+          <p class="mt-1 text-sm leading-6 text-indigo-800">Nilai ini dipakai sebagai saran otomatis saat menyetujui pengajuan (jam keluar + durasi ini). Admin tetap dapat mengubahnya secara manual per pengajuan.</p>
+        </div>
+      </div>
+
+      <form method="POST" action="{{ url_for('pengasuhan_permit_update_settings') }}" class="flex items-center gap-3">
+        <input type="number" min="1" name="default_return_hours" value="{{ settings.default_return_hours }}" class="w-24 rounded-xl border border-indigo-300 bg-white px-4 py-2.5 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100" />
+        <span class="text-sm font-medium text-indigo-800">jam</span>
+        <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700">Simpan</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-lg overflow-hidden">
+    <div class="border-b bg-gradient-to-r from-slate-50 to-white px-4 py-5 sm:px-6 sm:py-6">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">Daftar Pengajuan</h2>
+          <p class="text-sm text-slate-500 mt-1">Kelola seluruh data pengajuan izin keluar pondok santri.</p>
+        </div>
+
+        <button type="button" onclick="window.location.reload()" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-300 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v6h6M20 20v-6h-6M20 9A8 8 0 005.3 6M4 15a8 8 0 0014.7 3" />
+          </svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:px-6 sm:py-5">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <div class="xl:col-span-6">
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Pencarian </label>
+          <div class="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z" />
+            </svg>
+            <input id="searchRequest" type="text" placeholder="Cari nama santri atau keperluan..." class="w-full rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-4 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100" />
+          </div>
+        </div>
+
+        <div class="xl:col-span-3">
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Status </label>
+          <select id="statusFilter" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+            <option value="">Semua Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Finished">Finished</option>
+          </select>
+        </div>
+
+        <div class="xl:col-span-3">
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Tampilkan </label>
+          <select id="pageLength" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+            <option>10</option>
+            <option>25</option>
+            <option>50</option>
+            <option>100</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1">
+      <div class="w-full overflow-x-auto">
+        <table id="requestsTable" class="min-w-[950px] w-full">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50">
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">No</th>
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Santri</th>
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Tanggal</th>
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Jam Keluar</th>
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Keperluan</th>
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Aksi</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-100">
+            {% if permits %} {% for item in permits %}
+            <tr class="hover:bg-slate-50 transition">
+              <td class="px-4 py-3 sm:px-6 sm:py-4">{{ loop.index }}</td>
+              <td class="px-4 py-3 sm:px-6 sm:py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold">{{ item.name[:1]|upper }}</div>
+                  <div class="text-sm sm:text-base font-semibold text-slate-800">{{ item.name }}</div>
+                </div>
+              </td>
+              <td class="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">{{ item.departure_date|format_date }}</td>
+              <td class="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap font-mono text-sm">{{ item.departure_time|format_time }}</td>
+              <td class="px-4 py-3 sm:px-6 sm:py-4">
+                <div class="max-w-[180px] sm:max-w-sm truncate" title="{{ item.reason }}">{{ item.reason }}</div>
+              </td>
+              <td class="px-4 py-3 sm:px-6 sm:py-4 text-center">{{ item.status|status_badge }}</td>
+              <td class="px-4 py-3 sm:px-6 sm:py-4">
+                <div class="flex justify-center">
+                  <a href="{{ url_for('pengasuhan_permit_detail', permit_id=item.id) }}" class="inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0A9 9 0 113 12a9 9 0 0118 0z" />
+                    </svg>
+                    Detail
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %} {% else %}
+            <tr>
+              <td colspan="7" class="py-16 text-center text-slate-500">Tidak ada data.</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="pagination" class="flex flex-col gap-4 border-t border-slate-200 bg-white px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
+      <p id="paginationInfo" class="text-sm text-slate-500 text-center"></p>
+      <div id="paginationButtons" class="flex flex-wrap justify-center gap-2 overflow-x-auto pb-1 md:justify-end"></div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block script %}
+<script type="module">
+  // Struktur tabel (kolom Santri=1, Keperluan=4, Status=5) sama persis
+  // dengan tabel Pengajuan HP, sehingga script yang sudah ada bisa
+  // dipakai ulang tanpa duplikasi kode.
+  import requestTable from "{{ url_for('static', filename='js/request-table.js') }}";
+  requestTable();
+</script>
+{% endblock %}

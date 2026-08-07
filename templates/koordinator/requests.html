@@ -1,0 +1,439 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}
+Peminjaman Aktif
+{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col gap-6">
+
+    <!-- Header -->
+
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+        <div>
+
+            <h1 class="text-2xl font-bold sm:text-3xl">
+
+                Peminjaman Aktif
+
+            </h1>
+
+            <p class="mt-1 text-slate-500">
+
+                Kelola seluruh HP yang sedang dipinjam oleh santri.
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- Card -->
+
+    <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
+
+        <!-- Header Card -->
+
+        <div class="border-b bg-gradient-to-r from-slate-50 to-white px-4 py-5 sm:px-6 sm:py-6">
+
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+
+                <div>
+
+                    <h2 class="text-xl font-bold text-slate-800">
+
+                        Daftar Peminjaman Aktif
+
+                    </h2>
+
+                    <p class="mt-1 text-sm text-slate-500">
+
+                        Daftar seluruh santri yang saat ini masih meminjam HP.
+
+                    </p>
+
+                </div>
+
+                <button
+                    type="button"
+                    onclick="window.location.reload()"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-4 w-4"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 4v6h6M20 20v-6h-6M20 9A8 8 0 005.3 6M4 15a8 8 0 0014.7 3"/>
+
+                    </svg>
+
+                    Refresh
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- Filter -->
+
+        <div class="border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:px-6 sm:py-5">
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+
+                <!-- Search -->
+
+                <div class="xl:col-span-6">
+
+                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+                        Pencarian
+
+                    </label>
+
+                    <div class="relative">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor">
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z"/>
+
+                        </svg>
+
+                        <input
+                            id="searchRequest"
+                            type="text"
+                            placeholder="Cari nama santri atau alasan..."
+                            class="w-full rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-4 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+
+                    </div>
+
+                </div>
+
+                <!-- Status -->
+
+                <div class="xl:col-span-3">
+
+                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+                        Status
+
+                    </label>
+
+                    <select
+                        id="statusFilter"
+                        class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+
+                        <option value="">Semua Status</option>
+
+                        <option value="Approved">
+
+                            Approved
+
+                        </option>
+
+                        <option value="Finished">
+
+                            Finished
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- Page Length -->
+
+                <div class="xl:col-span-3">
+
+                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+                        Tampilkan
+
+                    </label>
+
+                    <select
+                        id="pageLength"
+                        class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Table -->
+
+        <div class="overflow-x-auto">
+
+            <table
+                id="requestsTable"
+                class="min-w-[900px] w-full">
+
+                <thead>
+
+                <tr class="border-b border-slate-200 bg-slate-50">
+
+                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+
+                        No
+
+                    </th>
+
+                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+
+                        Santri
+
+                    </th>
+
+                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+
+                        Tanggal
+
+                    </th>
+
+                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+
+                        Jam
+
+                    </th>
+
+                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+
+                        Alasan
+
+                    </th>
+
+                    <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
+
+                        Status
+
+                    </th>
+
+                    <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
+
+                        Aksi
+
+                    </th>
+
+                </tr>
+
+                </thead>
+
+                <tbody class="divide-y divide-slate-100">
+
+                {% if requests %}
+
+                    {% for item in requests %}
+
+                    <tr class="hover:bg-slate-50 transition">
+
+                        <td class="px-6 py-4">
+
+                            {{ loop.index }}
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            <div class="flex items-center gap-3">
+
+                                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-700">
+
+                                    {{ item.name[:1]|upper }}
+
+                                </div>
+
+                                <div>
+
+                                    <p class="font-semibold text-slate-800">
+
+                                        {{ item.name }}
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <td class="px-6 py-4 whitespace-nowrap">
+
+                            {{ item.borrow_date|format_date }}
+
+                        </td>
+
+                        <td class="px-6 py-4 whitespace-nowrap font-mono text-sm">
+
+                            {{ item.start_time|format_time }}
+                            —
+                            {{ item.end_time|format_time }}
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            <div
+                                class="max-w-xs truncate"
+                                title="{{ item.reason }}">
+
+                                {{ item.reason }}
+
+                            </div>
+
+                        </td>
+
+                        <td class="px-6 py-4 text-center">
+
+                            {{ item.status|status_badge }}
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            <div class="flex justify-center">
+
+                                {% if item.status == "APPROVED" %}
+
+<form
+    method="POST"
+    action="{{ url_for('finish_request', request_id=item.id) }}"
+    class="finish-form"
+    id="finishForm">
+
+    <input
+        type="hidden"
+        name="finished_at"
+        class="finishedAt">
+
+    <button
+        type="submit"
+        class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700">
+
+        Dikembalikan
+
+    </button>
+
+</form>
+
+{% elif item.status == "FINISHED" %}
+
+<span
+    class="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600">
+
+    ✔ Sudah Selesai
+
+</span>
+
+{% endif %}
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            class="py-16 text-center text-slate-500">
+
+                            Tidak ada data.
+
+                        </td>
+
+                    </tr>
+
+                {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- Pagination -->
+
+        <div
+            id="pagination"
+            class="flex flex-col gap-4 border-t border-slate-200 bg-white px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
+
+            <p
+                id="paginationInfo"
+                class="text-center text-sm text-slate-500">
+
+            </p>
+
+            <div
+                id="paginationButtons"
+                class="flex flex-wrap justify-center gap-2 overflow-x-auto pb-1 md:justify-end">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+<script type="module">
+
+import requestTable from "{{ url_for('static', filename='js/request-table.js') }}";
+
+requestTable();
+document.querySelectorAll(".finish-form").forEach(form => {
+
+    form.addEventListener("submit", () => {
+
+        const now = new Date();
+
+        const pad = n => String(n).padStart(2, "0");
+
+        const datetime =
+            now.getFullYear() + "-" +
+            pad(now.getMonth() + 1) + "-" +
+            pad(now.getDate()) + " " +
+            pad(now.getHours()) + ":" +
+            pad(now.getMinutes()) + ":" +
+            pad(now.getSeconds());
+
+        form.querySelector(".finishedAt").value = datetime;
+
+    });
+
+});
+
+</script>
+
+{% endblock %}

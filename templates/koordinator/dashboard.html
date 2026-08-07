@@ -1,0 +1,149 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}
+Dashboard Koordinator
+{% endblock %}
+
+{% block content %}
+
+<div class="space-y-8">
+
+    <div>
+
+        <h1 class="text-3xl font-bold">
+
+            Dashboard Koordinator
+
+        </h1>
+
+        <p class="text-gray-500">
+
+            Ringkasan peminjaman HP yang sedang berlangsung.
+
+        </p>
+
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+
+            <p class="text-blue-700 text-sm">
+
+                Sedang Dipinjam
+
+            </p>
+
+            <h2 class="text-4xl font-bold mt-2">
+
+                {{ stats.active }}
+
+            </h2>
+
+        </div>
+
+        <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+
+            <p class="text-green-700 text-sm">
+
+                Selesai
+
+            </p>
+
+            <h2 class="text-4xl font-bold mt-2">
+
+                {{ stats.finished }}
+
+            </h2>
+
+        </div>
+
+        <div class="bg-gray-50 border rounded-xl p-6">
+
+            <p class="text-gray-700 text-sm">
+
+                Approved Hari Ini
+
+            </p>
+
+            <h2 class="text-4xl font-bold mt-2">
+
+                {{ stats.today }}
+
+            </h2>
+
+        </div>
+
+    </div>
+
+    <div class="bg-white rounded-xl border shadow">
+
+        <div class="flex justify-between items-center px-6 py-5 border-b">
+
+            <h2 class="font-semibold">
+
+                Peminjaman Aktif Terbaru
+
+            </h2>
+
+            <a
+                href="{{ url_for('koordinator_requests') }}"
+                class="text-blue-600">
+
+                Lihat Semua →
+
+            </a>
+
+        </div>
+
+        {% if latest %}
+
+            <div class="divide-y">
+
+                {% for item in latest %}
+
+                 <div class="px-6 py-4 flex justify-between items-center">
+
+                    <div>
+
+                        <p class="font-medium">
+
+                            {{ item.name }}
+
+                        </p>
+
+                        <p class="text-sm text-gray-500">
+
+                            {{ item.borrow_date|format_date }}
+
+                        </p>
+
+                    </div>
+
+                    <div>
+
+                        {{ item.status|status_badge }}
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="py-12 text-center text-gray-500">
+
+                Tidak ada peminjaman aktif.
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

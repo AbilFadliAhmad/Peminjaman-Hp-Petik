@@ -1,0 +1,196 @@
+{% extends 'layouts/base.html' %} {% block title %} Detail Izin Keluar {% endblock %} {% block content %}
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <p class="text-sm font-medium text-blue-600">Perizinan Keluar Pondok</p>
+      <h1 class="text-2xl font-bold text-slate-800 sm:text-3xl">Detail Pengajuan</h1>
+      <p class="mt-2 text-sm text-slate-500 sm:text-base">Informasi lengkap mengenai pengajuan izin keluar pondok santri.</p>
+    </div>
+
+    <a href="{{ url_for('pengasuhan_permits') }}" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"> Kembali </a>
+  </div>
+
+  {% if late_minutes %}
+  <div class="rounded-2xl border border-red-200 bg-red-50 p-5">
+    <p class="text-xs font-semibold uppercase tracking-wide text-red-500">Keterlambatan Kembali ke Pondok</p>
+    <p class="mt-2 text-lg font-semibold text-red-700">Terlambat {{ late_minutes }} menit</p>
+  </div>
+  {% endif %}
+
+  <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
+    <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
+      <h2 class="text-lg font-semibold text-slate-800">Informasi Pengajuan</h2>
+      <p class="mt-1 text-sm text-slate-500">Informasi dasar mengenai pengajuan izin keluar pondok.</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 p-6 lg:grid-cols-2">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Nama Santri</p>
+        <p class="mt-2 text-base font-semibold text-slate-800">{{ data.name }}</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>
+        <div class="mt-2">{{ data.status|status_badge }}</div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tanggal Keluar</p>
+        <p class="mt-2 text-slate-700">{{ data.departure_date|format_date }}</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Jam Keluar</p>
+        <p class="mt-2 font-mono text-slate-700">{{ data.departure_time|format_time }}</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Batas Waktu Wajib Kembali</p>
+        <p class="mt-2 text-slate-700">{{ data.return_deadline|format_datetime if data.return_deadline else "-" }}</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Waktu Kembali Tercatat</p>
+        <p class="mt-2 text-slate-700">{{ data.returned_at|format_datetime if data.returned_at else "-" }}</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Dibuat Pada</p>
+        <p class="mt-2 text-slate-700">{{ data.created_at|format_datetime if data.created_at else "-" }}</p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Catatan Pengasuhan</p>
+        <p class="mt-2 text-slate-700">{{ data.admin_note or "-" }}</p>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-200 bg-slate-50 px-6 py-6">
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Keperluan / Alasan Keluar</p>
+      <div class="mt-3 rounded-2xl border border-slate-200 bg-white p-5 leading-7 text-slate-700">{{ data.reason }}</div>
+    </div>
+
+    <div class="border-t border-slate-200 bg-red-50/60 px-6 py-6">
+      <p class="text-xs font-semibold uppercase tracking-wide text-red-500">Persetujuan Syarat & Ketentuan Santri</p>
+      <p class="mt-3 text-sm leading-6 text-red-700">
+        {% if data.agreement_accepted %} ✅ Santri telah menyetujui Syarat & Ketentuan pada {{ data.agreement_accepted_at|format_datetime }}. {% else %} ⚠️ Santri belum menyetujui Syarat & Ketentuan. {% endif %}
+      </p>
+    </div>
+  </div>
+
+  {% if data.status == "PENDING" %}
+  <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
+    <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
+      <h2 class="text-lg font-semibold text-slate-800">Proses Persetujuan</h2>
+      <p class="mt-1 text-sm text-slate-500">Berikan keputusan terhadap pengajuan izin keluar ini.</p>
+    </div>
+
+    <form id="decisionForm" method="POST">
+      <div class="space-y-6 p-6">
+        <div>
+          <label for="return_deadline" class="mb-2 block text-sm font-medium text-slate-700"> Batas Waktu Wajib Kembali ke Pondok </label>
+          <input id="return_deadline" name="return_deadline" class="modern-input" placeholder="Pilih tanggal & jam wajib kembali" />
+          <p class="mt-2 text-xs text-slate-400">Terisi otomatis berdasarkan pengaturan default, dapat diubah sesuai kebutuhan. Wajib diisi saat menyetujui pengajuan.</p>
+        </div>
+
+        <div>
+          <label for="admin_note" class="mb-2 block text-sm font-medium text-slate-700"> Catatan Pengasuhan </label>
+          <textarea id="admin_note" name="admin_note" rows="4" placeholder="Tambahkan catatan untuk santri (opsional)..." class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"></textarea>
+        </div>
+        <input type="hidden" name="permit_id" value="{{ data.id }}">
+        <div class="flex justify-end gap-3">
+          <button type="submit" formaction="{{ url_for('pengasuhan_permit_reject') }}" formnovalidate class="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-red-700">Tolak</button>
+          <button type="submit" formaction="{{ url_for('pengasuhan_permit_approve') }}" class="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700">Setujui</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  {% elif data.status == "APPROVED" %}
+  <div class="overflow-hidden rounded-3xl border border-emerald-200 bg-white shadow-lg">
+    <div class="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-white px-6 py-5">
+      <h2 class="text-lg font-semibold text-slate-800">Konfirmasi Kembali ke Pondok</h2>
+      <p class="mt-1 text-sm text-slate-500">Tandai apabila santri sudah kembali ke pondok.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('pengasuhan_permit_finish', request_id=data.id) }}" id="finishForm">
+      <div class="flex justify-end gap-3 p-6">
+        <input type="hidden" name="permit_id" value="{{ data.id }}">
+        <button type="submit" class="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700">✅ Tandai Sudah Kembali</button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %} {% block script %}
+<script>
+  {% if data.status == "PENDING" %}
+  flatpickr("#return_deadline", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    altInput: true,
+    altFormat: "d F Y, H:i",
+    time_24hr: true,
+    {% if suggested_deadline %}
+    defaultDate: "{{ suggested_deadline.strftime('%Y-%m-%d %H:%M') }}",
+    {% endif %}
+  });
+
+  const decisionForm = document.getElementById("decisionForm");
+  let submitAction = null;
+
+  decisionForm.querySelectorAll("button[type=submit]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      submitAction = btn.getAttribute("formaction");
+    });
+  });
+
+  decisionForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const isApprove = submitAction && submitAction.includes("/approve");
+    const deadline = document.getElementById("return_deadline").value;
+
+    if (isApprove && !deadline) {
+      Swal.fire({
+        icon: "warning",
+        title: "Batas Waktu Belum Diisi",
+        text: "Batas Waktu Wajib Kembali harus diisi sebelum menyetujui pengajuan.",
+        confirmButtonColor: "#2563eb"
+      });
+      return;
+    }
+
+    const result = await Swal.fire({
+      icon: isApprove ? "question" : "warning",
+      title: isApprove ? "Setujui Pengajuan?" : "Tolak Pengajuan?",
+      text: isApprove ? "Santri akan diizinkan keluar pondok sesuai batas waktu yang ditentukan." : "Pengajuan izin keluar akan ditolak.",
+      showCancelButton: true,
+      confirmButtonText: isApprove ? "Ya, Setujui" : "Ya, Tolak",
+      cancelButtonText: "Batal",
+      reverseButtons: true,
+      confirmButtonColor: isApprove ? "#16a34a" : "#dc2626",
+      cancelButtonColor: "#64748b"
+    });
+
+    if (!result.isConfirmed) return;
+
+    decisionForm.action = submitAction;
+    decisionForm.submit();
+  });
+  {% endif %}
+
+  {% if data.status == "APPROVED" %}
+  document.getElementById("finishForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const result = await Swal.fire({
+      icon: "question",
+      title: "Tandai Sudah Kembali?",
+      text: "Status pengajuan akan diubah menjadi Finished.",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Tandai",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#16a34a"
+    });
+
+    if (!result.isConfirmed) return;
+
+    this.submit();
+  });
+  {% endif %}
+</script>
+{% endblock %}

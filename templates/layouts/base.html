@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>{% block title %} Peminjaman HP {% endblock %}</title>
+
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ChartJS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- FilePond -->
+    <link href="https://unpkg.com/filepond/dist/filepond.min.css" rel="stylesheet" />
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.min.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.min.js"></script>
+
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+
+        background: #f5f7fb;
+      }
+
+      .modern-input {
+        width: 100%;
+        border-radius: 1rem; /* 16px / 2xl */
+        border: 1px solid #cbd5e1; /* slate-300 */
+        background-color: #ffffff; /* white */
+        padding: 0.75rem 1rem; /* py-3 px-4 */
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); /* transition */
+      }
+
+      .modern-input:focus {
+        outline: none;
+        border-color: #3b82f6; /* focus:border-blue-500 */
+        box-shadow: 0 0 0 4px #dbeafe; /* focus:ring-4 focus:ring-blue-100 */
+      }
+
+      .filepond--root {
+        margin-top: 12px;
+      }
+
+      .filepond--panel-root {
+        border-radius: 18px;
+        border: 2px dashed #cbd5e1;
+        background: #f8fafc;
+      }
+
+      .filepond--drop-label {
+        color: #475569;
+        min-height: 220px;
+      }
+
+      .filepond--label-action {
+        color: #2563eb;
+        font-weight: 600;
+      }
+
+      .filepond--credits {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    {% if session.get('user_id') %}
+
+    <div class="flex min-h-screen">
+      {% include 'partials/sidebar.html' %}
+
+      <div class="flex min-w-0 flex-1 flex-col lg:ml-72">
+        {% include 'partials/navbar.html' %}
+
+        <main class="p-4 sm:p-6 lg:p-8">{% include 'partials/flash.html' %} {% block content %} {% endblock %}</main>
+      </div>
+    </div>
+
+    {% else %}
+
+    <div class="min-h-screen flex items-center justify-center">{% block auth %} {% endblock %}</div>
+
+    {% endif %} {% block script %} {% endblock %}
+    <script>
+      const sidebar = document.getElementById("sidebar");
+
+      const overlay = document.getElementById("sidebarOverlay");
+
+      const toggle = document.getElementById("sidebarToggle");
+
+      toggle?.addEventListener("click", () => {
+        sidebar.classList.remove("-translate-x-full");
+
+        overlay.classList.remove("hidden");
+      });
+
+      overlay?.addEventListener("click", () => {
+        sidebar.classList.add("-translate-x-full");
+
+        overlay.classList.add("hidden");
+      });
+
+      window.addEventListener("resize", () => {
+        if (window.innerWidth >= 1024) {
+          sidebar.classList.remove("-translate-x-full");
+
+          overlay.classList.add("hidden");
+        } else {
+          sidebar.classList.add("-translate-x-full");
+        }
+      });
+    </script>
+  </body>
+</html>

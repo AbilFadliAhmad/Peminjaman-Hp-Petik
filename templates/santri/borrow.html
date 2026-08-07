@@ -1,0 +1,586 @@
+{% set is_edit = borrow is defined and borrow %} {% extends 'layouts/base.html' %} {% block title %} Ajukan Peminjaman {% endblock %} {% block content %}
+<div class="flex flex-col gap-6">
+  <div>
+    <h1 class="text-3xl font-bold text-slate-800">{% if is_edit %} Edit Pengajuan {% else %} Ajukan Peminjaman HP {% endif %}</h1>
+
+    <p class="mt-2 text-slate-500">
+      {% if is_edit %} Anda masih dapat memperbarui informasi pengajuan selama statusnya masih menunggu persetujuan dari Pengasuhan. {% else %} Lengkapi informasi di bawah ini agar Pengasuhan dapat mempertimbangkan pengajuan Anda dengan
+      lebih cepat. {% endif %}
+    </p>
+  </div>
+
+  <div class="rounded-3xl border border-blue-200 bg-blue-50 p-6">
+    <div class="flex items-start gap-4">
+      <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">💡</div>
+      <div>
+        <h2 class="font-semibold text-blue-900">Tips Pengajuan</h2>
+        <ul class="mt-3 space-y-2 text-sm text-blue-800">
+          <li>• Jelaskan alasan secara lengkap dan mudah dipahami.</li>
+          <li>• Ajukan peminjaman beberapa jam sebelum digunakan agar Pengasuhan memiliki waktu untuk memproses.</li>
+          <li>• Lampirkan dokumen pendukung apabila diperlukan.</li>
+          <li>• Setelah Pengasuhan mulai memproses pengajuan, perubahan tidak lagi dapat dilakukan.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
+    <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-6">
+      <h2 class="text-xl font-bold text-slate-800">Form Pengajuan</h2>
+      <p class="mt-1 text-sm text-slate-500">Seluruh informasi di bawah akan digunakan sebagai bahan pertimbangan Pengasuhan.</p>
+    </div>
+
+    <div class="space-y-8 p-6">
+      <!-- Form utama yang membungkus semua input dan Dropzone -->
+      <form id="mainForm" method="POST" action="{% if is_edit %}{{ url_for('santri_edit_borrow') }}{% else %}{{ url_for('santri_borrow') }}{% endif %}" enctype="multipart/form-data" class="space-y-5">
+        <div>
+          <label class="mb-2 block text-sm font-semibold text-slate-700">Alasan Peminjaman</label>
+          <textarea
+            id="reason"
+            name="reason"
+            rows="7"
+            required
+            oninput="validateForm()"
+            placeholder="Jelaskan alasan peminjaman HP secara lengkap..."
+            class="w-full rounded-2xl border border-slate-300 px-5 py-4 shadow-sm transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+          >
+{{ borrow.reason if is_edit  else "" }}</textarea
+          >
+          <div id="reasonWarning" class="mt-3 hidden rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-700"></div>
+          <div class="mt-2 flex justify-end">
+            <span id="reasonCounter" class="text-xs text-slate-400"> 0/50 karakter </span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div>
+            <label class="block mb-2 font-medium">Tanggal</label>
+            <input value="{{ borrow.borrow_date if is_edit else '' }}" id="borrow_date" name="borrow_date" class="modern-input" placeholder="Pilih tanggal" required />
+          </div>
+          <div>
+            <label class="block mb-2 font-medium">Jam Mulai</label>
+            <input value="{{ borrow.start_time if is_edit else '' }}" id="start_time" name="start_time" class="modern-input" placeholder="Jam mulai" required />
+          </div>
+          <div>
+            <label class="block mb-2 font-medium">Jam Selesai</label>
+            <input value="{{ borrow.end_time if is_edit else '' }}" id="end_time" name="end_time" class="modern-input" placeholder="Jam selesai" required />
+          </div>
+        </div>
+        <div id="validationError" class="hidden rounded-2xl border border-red-300 bg-red-50 p-4">
+          <div class="flex gap-3">
+            <div class="text-xl">❌</div>
+            <div>
+              <h4 class="font-semibold text-red-800">Data Belum Valid</h4>
+              <ul id="validationErrorList" class="mt-2 list-disc pl-5 text-sm text-red-700 space-y-1"></ul>
+            </div>
+          </div>
+        </div>
+        <div id="timeWarning" class="hidden rounded-2xl border border-orange-300 bg-orange-50 p-4">
+          <div class="flex gap-3">
+            <div class="text-xl">⚠️</div>
+
+            <div>
+              <h4 class="font-semibold text-orange-800">Pengajuan Terlalu Mepet</h4>
+
+              <p id="timeWarningText" class="mt-1 text-sm text-orange-700"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tautkan Teman -->
+
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+          <div class="flex items-start gap-4">
+            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-100 text-2xl">👥</div>
+
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <h4 class="font-semibold text-slate-800">Tautkan Teman</h4>
+
+                <span class="rounded-full bg-slate-200 px-2 py-1 text-xs font-semibold text-slate-600"> Opsional </span>
+              </div>
+
+              <p class="mt-2 text-sm leading-6 text-slate-500">Pilih seorang teman apabila diperlukan. Pengajuan yang ditautkan akan menunggu persetujuan teman terlebih dahulu, kemudian dilanjutkan ke proses verifikasi oleh Pengasuhan.</p>
+
+              <div class="relative mt-5">
+                <label class="mb-2 block text-sm font-medium text-slate-700"> Cari Teman </label>
+
+                <input id="friendSearch" type="text" autocomplete="off" placeholder="Cari nama Teman..." class="modern-input pr-10" />
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-[46px] h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+
+                <input type="hidden" id="friend_user_id" name="friend_user_id" />
+
+                <!-- Dropdown -->
+
+                <div id="friendDropdown" class="absolute left-0 right-0 z-50 mt-2 hidden max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-xl">
+                  <!-- hasil pencarian dimasukkan lewat JavaScript -->
+                </div>
+              </div>
+
+              <!-- Teman yang dipilih -->
+
+              <div id="selectedFriend" class="mt-4 hidden rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div id="selectedAvatar" class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">A</div>
+
+                    <div>
+                      <p id="selectedName" class="font-medium text-slate-800"></p>
+                    </div>
+                  </div>
+
+                  <button type="button" id="removeFriend" class="text-sm font-medium text-red-600 hover:text-red-700">Hapus</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--Upload dokumen pendukung-->
+        <div>
+          <!-- FilePond -->
+          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 mb-4">
+            <div class="flex items-start gap-4">
+              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100">📁</div>
+
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="font-semibold text-slate-800">Upload Dokumen Pendukung</h4>
+
+                  <span class="rounded-full bg-slate-200 px-2 py-1 text-xs font-semibold text-slate-600"> Opsional </span>
+                </div>
+
+                <p class="mt-2 text-sm leading-6 text-slate-500">Lampirkan dokumen pendukung apabila diperlukan, misalnya surat tugas, surat izin, atau dokumen lain yang dapat membantu Pengasuhan dalam mempertimbangkan pengajuan.</p>
+
+                <p class="mt-2 text-xs text-slate-400">Maksimal 10 file • 20 MB per file</p>
+              </div>
+            </div>
+          </div>
+
+          <input id="files" type="file" multiple name="files" />
+        </div>
+
+        <div class="flex justify-end gap-3">
+          <a href="{{ url_for('santri_dashboard') }}" class="px-5 py-3 rounded-lg border">Batal</a>
+          <button id="submitBorrow" type="submit" class="px-5 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700">{{ "Simpan Perubahan" if is_edit else "Kirim Pengajuan" }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  function pad(value) {
+    return String(value).padStart(2, "0");
+  }
+
+  function getDefaultBorrowTime() {
+    const now = new Date();
+
+    // +1 jam 5 menit
+    now.setMinutes(now.getMinutes() + 65);
+
+    const startHour = pad(now.getHours());
+    const startMinute = pad(now.getMinutes());
+
+    const start = `${startHour}:${startMinute}`;
+    const end = new Date(now);
+
+    // +2 jam dari jam mulai
+    end.setHours(end.getHours() + 2);
+
+    return {
+      start,
+      end,
+    };
+  }
+
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  const defaultDate = `${yyyy}-${mm}-${dd}`;
+  const defaultTime = getDefaultBorrowTime();
+
+  flatpickr("#borrow_date", {
+  {% if not is_edit %}
+  defaultDate: defaultDate,
+  {% endif %}
+  dateFormat: "Y-m-d",
+          minDate: "today",
+          altInput: true,
+          altFormat: "d F Y",
+          onChange() {
+    (checkBorrowTime(), validateForm());
+  },
+  });
+
+  flatpickr("#start_time", {
+    enableTime: true,
+    noCalendar: true,
+  {% if not is_edit %}
+  defaultDate: defaultTime.start,
+  {% endif %}
+  dateFormat: "H:i",
+          time_24hr: true,
+          onChange() {
+    (checkBorrowTime(), validateForm());
+  },
+  });
+
+  flatpickr("#end_time", {
+    enableTime: true,
+    noCalendar: true,
+  {% if not is_edit %}
+  defaultDate: defaultTime.end,
+  {% endif %}
+  dateFormat: "H:i",
+          time_24hr: true,
+          onChange() {
+    validateForm();
+  },
+  });
+
+  FilePond.registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType, FilePondPluginFileValidateSize);
+
+  FilePond.create(document.querySelector("#files"), {
+    allowMultiple: true,
+    maxFiles: 10,
+    maxFileSize: "20MB",
+    credits: false,
+    storeAsFile: true,
+    acceptedFileTypes: ["image/*", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+    labelIdle: `Drag & Drop your files or <span class="filepond--label-action">Browse</span>`,
+  });
+
+  const reason = document.getElementById("reason");
+  const warning = document.getElementById("reasonWarning");
+  const counter = document.getElementById("reasonCounter");
+
+  const MIN_REASON = 50;
+  reason.addEventListener("input", () => {
+    const length = reason.value.trim().length;
+    counter.textContent = `${length}/50 karakter`;
+    if (length === 0) {
+      warning.classList.add("hidden");
+      return;
+    }
+
+    if (length < MIN_REASON) {
+      warning.classList.remove("hidden");
+      warning.innerHTML = `
+          <strong>Alasan masih terlalu singkat.</strong><br>
+          Jelaskan secara detail agar Pengasuhan dapat mempertimbangkan pengajuan dengan lebih mudah.
+          `;
+    } else {
+      warning.classList.add("hidden");
+    }
+  });
+
+  const borrowDate = document.getElementById("borrow_date");
+  const startTime = document.getElementById("start_time");
+
+  const timeWarning = document.getElementById("timeWarning");
+  const timeWarningText = document.getElementById("timeWarningText");
+
+  const WARNING_HOUR = 1;
+
+  function checkBorrowTime() {
+    if (!borrowDate.value || !startTime.value) {
+      timeWarning.classList.add("hidden");
+      return;
+    }
+
+    const now = new Date();
+    const borrow = new Date(`${borrowDate.value}T${startTime.value}`);
+    const diff = (borrow - now) / 1000 / 60;
+
+    if (diff <= 0) {
+      timeWarning.classList.remove("hidden");
+      timeWarningText.innerHTML = "Waktu yang dipilih sudah lewat.";
+      return;
+    }
+
+    if (diff < WARNING_HOUR * 60) {
+      timeWarning.classList.remove("hidden");
+      timeWarningText.innerHTML = `Pengajuan dilakukan kurang dari <strong>${WARNING_HOUR} jam</strong> sebelum waktu peminjaman. Pengasuhan mungkin membutuhkan waktu untuk memproses pengajuan.`;
+    } else {
+      timeWarning.classList.add("hidden");
+    }
+  }
+
+  const submitButton = document.getElementById("submitBorrow");
+  const validationBox = document.getElementById("validationError");
+  const validationList = document.getElementById("validationErrorList");
+
+  function validateForm() {
+    const errors = [];
+    const reasonText = reason.value.trim();
+    const borrowDate = document.getElementById("borrow_date").value;
+    const startTime = document.getElementById("start_time").value;
+    const endTime = document.getElementById("end_time").value;
+
+    const isComplete = reasonText && borrowDate && startTime && endTime;
+
+    if (!isComplete) {
+      validationBox.classList.add("hidden");
+      submitButton.disabled = true;
+      submitButton.classList.add("opacity-50", "cursor-not-allowed");
+      return;
+    }
+
+    if (borrowDate && startTime && endTime) {
+      const start = new Date(`${borrowDate}T${startTime}`);
+      const end = new Date(`${borrowDate}T${endTime}`);
+
+      if (end <= start) {
+        errors.push("Jam selesai harus lebih besar dari jam mulai.");
+      }
+    }
+
+    if (errors.length > 0) {
+      validationList.innerHTML = errors.map((e) => `<li>${e}</li>`).join("");
+      validationBox.classList.remove("hidden");
+      submitButton.disabled = true;
+      submitButton.classList.add("opacity-50", "cursor-not-allowed");
+    } else {
+      validationBox.classList.add("hidden");
+      submitButton.disabled = false;
+      submitButton.classList.remove("opacity-50", "cursor-not-allowed");
+    }
+  }
+
+  const form = document.getElementById("mainForm");
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    if (submitButton.disabled) {
+      return;
+    }
+
+    const borrow = new Date(`${borrowDate.value}T${startTime.value}`);
+    const now = new Date();
+    const diffMinute = (borrow - now) / 1000 / 60;
+
+    let result;
+
+    // ============================
+    // Warning Alasan Terlalu Singkat
+    // ============================
+
+    if (reason.value.trim().length < MIN_REASON) {
+      result = await Swal.fire({
+        icon: "warning",
+        title: "Alasan Masih Terlalu Singkat",
+        html: `
+            Penjelasan yang Anda berikan masih terlalu singkat.
+            <br><br>
+            Mohon jelaskan secara lebih rinci, misalnya:
+            <ul style="text-align:left;margin-top:12px">
+                <li>• Keperluan penggunaan HP</li>
+                <li>• Tujuan yang akan dilakukan</li>
+                <li>• Mengapa harus menggunakan HP</li>
+                <li>• Perkiraan aktivitas selama peminjaman</li>
+            </ul>
+            <br>
+            Pengasuhan akan lebih mudah memberikan keputusan apabila alasan ditulis dengan lengkap.
+            <br><br>
+            Tetap kirim pengajuan?
+        `,
+
+        showCancelButton: true,
+        confirmButtonText: "Tetap Kirim",
+        cancelButtonText: "Perbaiki Alasan",
+        reverseButtons: true,
+        confirmButtonColor: "#2563eb",
+        cancelButtonColor: "#64748b",
+      });
+    }
+
+            // ============================
+            // Warning (< 1 jam)
+    // ============================
+    else if (diffMinute < 60) {
+      result = await Swal.fire({
+        icon: "warning",
+        title: "Pengajuan Terlalu Mepet",
+        html: `
+                Pengajuan dilakukan kurang dari
+                <b>1 jam</b>
+                sebelum waktu peminjaman.
+
+                <br><br>
+
+                Pengasuhan mungkin belum sempat
+                memproses pengajuan sebelum waktu
+                peminjaman dimulai.
+
+                <br><br>
+
+                Tetap kirim pengajuan?
+            `,
+
+        showCancelButton: true,
+        confirmButtonText: "Ya, Kirim",
+        cancelButtonText: "Batal",
+        reverseButtons: true,
+        confirmButtonColor: "#2563eb",
+        cancelButtonColor: "#64748b",
+      });
+    }
+
+            // ============================
+            // Konfirmasi Normal
+    // ============================
+    else {
+      result = await Swal.fire({
+        icon: "question",
+        title: "{{ 'Simpan Perubahan Pengajuan?' if is_edit else 'Kirim Pengajuan?' }}",
+        text: "Pastikan seluruh data sudah benar.",
+        showCancelButton: true,
+        confirmButtonText: "{{ 'Ya, Simpan' if is_edit else 'Ya, Kirim' }}",
+        cancelButtonText: "Batal",
+        reverseButtons: true,
+        confirmButtonColor: "#2563eb",
+        cancelButtonColor: "#64748b",
+      });
+    }
+
+    if (!result.isConfirmed) return;
+
+    // ============================
+    // Loading
+    // ============================
+
+    Swal.fire({
+      title: "{{ 'Menyimpan Perubahan' if is_edit else 'Mengirim Pengajuan' }}",
+      html: "Mohon tunggu sebentar...",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+    form.submit();
+  });
+
+  const users = {{ users|tojson }};
+
+  const friendSearch = document.getElementById("friendSearch");
+  const friendDropdown = document.getElementById("friendDropdown");
+
+  const friendUserId = document.getElementById("friend_user_id");
+
+  const selectedFriend = document.getElementById("selectedFriend");
+  const selectedName = document.getElementById("selectedName");
+  const selectedAvatar = document.getElementById("selectedAvatar");
+  const removeFriend = document.getElementById("removeFriend");
+
+  friendSearch.addEventListener("input", function () {
+
+    const keyword = this.value.trim().toLowerCase();
+
+    friendDropdown.innerHTML = "";
+
+    if (keyword.length === 0) {
+
+      friendDropdown.classList.add("hidden");
+
+      return;
+
+    }
+
+    const results = users.filter(user =>
+
+            user.name.toLowerCase().includes(keyword)
+
+    );
+
+    if (results.length === 0) {
+
+      friendDropdown.innerHTML = `
+            <div class="px-4 py-3 text-sm text-slate-500">
+                Tidak ada santri ditemukan.
+            </div>
+        `;
+
+      friendDropdown.classList.remove("hidden");
+
+      return;
+
+    }
+
+    results.forEach(user => {
+
+      const item = document.createElement("button");
+
+      item.type = "button";
+
+      item.className =
+              "flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-slate-50";
+
+      item.innerHTML = `
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">
+                ${user.name.charAt(0)}
+            </div>
+
+            <div>
+                <div class="font-medium text-slate-800">
+                    ${user.name}
+                </div>
+            </div>
+        `;
+
+      item.onclick = () => {
+
+        friendUserId.value = user.id;
+
+        friendSearch.value = user.name;
+
+        selectedFriend.classList.remove("hidden");
+
+        selectedName.textContent = user.name;
+        selectedAvatar.textContent =
+                user.name.charAt(0).toUpperCase();
+
+        friendDropdown.classList.add("hidden");
+
+      };
+
+      friendDropdown.appendChild(item);
+
+    });
+
+    friendDropdown.classList.remove("hidden");
+
+  });
+
+  removeFriend.addEventListener("click", () => {
+
+    friendUserId.value = "";
+
+    friendSearch.value = "";
+
+    selectedFriend.classList.add("hidden");
+
+  });
+
+  document.addEventListener("click", function(e){
+
+    if(
+            !friendDropdown.contains(e.target) &&
+            e.target !== friendSearch
+    ){
+      friendDropdown.classList.add("hidden");
+    }
+
+  });
+
+  // Panggil fungsi saat halaman dimuat untuk memeriksa waktu peminjaman
+  validateForm();
+  checkBorrowTime();
+</script>
+{% endblock %} {% block script %} {% endblock %}

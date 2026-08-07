@@ -1,0 +1,159 @@
+{% extends 'layouts/base.html' %} {% block title %} Riwayat Peminjaman {% endblock %} {% block content %}
+
+<div class="flex flex-col gap-6">
+  <!-- Header -->
+
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold sm:text-3xl">Riwayat Peminjaman</h1>
+
+      <p class="mt-1 text-gray-500">Daftar seluruh riwayat pengajuan peminjaman HP Anda.</p>
+    </div>
+  </div>
+
+  <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
+    <!-- Header Card -->
+
+    <div class="border-b bg-gradient-to-r from-slate-50 to-white px-4 py-5 sm:px-6 sm:py-6">
+      <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">Riwayat Pengajuan</h2>
+
+          <p class="mt-1 text-sm text-slate-500">Seluruh pengajuan peminjaman HP yang pernah Anda lakukan.</p>
+        </div>
+
+        <button
+          onclick="window.location.reload()"
+          class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v6h6M20 20v-6h-6M20 9A8 8 0 005.3 6M4 15a8 8 0 0014.7 3" />
+          </svg>
+
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter -->
+
+    <div class="border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:px-6 sm:py-5">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <div class="xl:col-span-6">
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Pencarian </label>
+
+          <div class="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z" />
+            </svg>
+
+            <input
+              id="searchHistory"
+              type="text"
+              placeholder="Cari alasan pengajuan..."
+              class="w-full rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-4 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            />
+          </div>
+        </div>
+
+        <div class="xl:col-span-3">
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Status </label>
+
+          <select id="statusFilter" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+            <option value="">Semua Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Finished">Finished</option>
+          </select>
+        </div>
+
+        <div class="xl:col-span-3">
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Tampilkan </label>
+
+          <select id="pageLength" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+            <option>10</option>
+            <option>25</option>
+            <option>50</option>
+            <option>100</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+
+    <div class="flex-1">
+      <div class="w-full overflow-x-auto">
+        <table id="historyTable" class="min-w-[900px] w-full">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50">
+              <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">No</th>
+
+              <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Tanggal</th>
+
+              <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Jam</th>
+
+              <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Alasan</th>
+
+              <th class="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+              <th class="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Aksi</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-100">
+            {% if history %} {% for item in history %}
+
+            <tr class="transition hover:bg-slate-50">
+              <td class="px-4 py-4">{{ loop.index }}</td>
+
+              <td class="whitespace-nowrap px-4 py-4">{{ item.borrow_date|format_date }}</td>
+
+              <td class="whitespace-nowrap px-4 py-4 font-mono text-sm">{{ item.start_time|format_time }} — {{ item.end_time|format_time }}</td>
+
+              <td class="px-4 py-4">
+                <div class="max-w-sm truncate" title="{{ item.reason }}">{{ item.reason }}</div>
+              </td>
+
+              <td class="px-4 py-4 text-center">{{ item.status|status_badge }}</td>
+
+              <td class="px-4 py-4">
+                <div class="flex justify-center">
+                  <a href="{{ url_for('pengasuhan_request_detail', request_id=item.id) }}" class="inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0A9 9 0 113 12a9 9 0 0118 0z" />
+                    </svg>
+
+                    Detail
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %} {% else %}
+
+            <tr>
+              <td colspan="5" class="py-16 text-center text-slate-500">Belum ada riwayat peminjaman.</td>
+            </tr>
+
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+
+    <div id="pagination" class="flex flex-col gap-4 border-t border-slate-200 bg-white px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
+      <p id="paginationInfo" class="text-center text-sm text-slate-500"></p>
+
+      <div id="paginationButtons" class="flex flex-wrap justify-center gap-2 overflow-x-auto pb-1 md:justify-end"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}{% block script %}
+<script type="module">
+  import historyTable from "{{ url_for('static', filename='js/histories-table.js') }}";
+  historyTable();
+</script>
+{% endblock %}

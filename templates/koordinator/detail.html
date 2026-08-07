@@ -1,0 +1,201 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}
+Detail Peminjaman
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-4xl space-y-6">
+
+    <div class="flex justify-between items-center">
+
+        <div>
+
+            <h1 class="text-3xl font-bold">
+
+                Detail Peminjaman
+
+            </h1>
+
+            <p class="text-gray-500 mt-2">
+
+                Informasi lengkap peminjaman HP.
+
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('koordinator_requests') }}"
+            class="border rounded-lg px-5 py-3">
+
+            Kembali
+
+        </a>
+
+    </div>
+
+    <div class="bg-white rounded-xl border shadow">
+
+        <div class="border-b px-6 py-4">
+
+            <h2 class="font-semibold text-lg">
+
+                Informasi Peminjaman
+
+            </h2>
+
+        </div>
+
+        <div class="p-6 grid grid-cols-2 gap-6">
+
+            <div>
+
+                <p class="text-sm text-gray-500">
+
+                    Nama Santri
+
+                </p>
+
+                <p class="font-medium">
+
+                    {{ data.name }}
+
+                </p>
+
+            </div>
+
+            <div>
+
+                <p class="text-sm text-gray-500">
+
+                    Status
+
+                </p>
+
+                {{ data.status|status_badge }}
+
+            </div>
+
+            <div>
+
+                <p class="text-sm text-gray-500">
+
+                    Tanggal
+
+                </p>
+
+                <p>
+
+                    {{ data.borrow_date|format_date }}
+
+                </p>
+
+            </div>
+
+            <div>
+
+                <p class="text-sm text-gray-500">
+
+                    Jam
+
+                </p>
+
+                <p>
+
+                    {{ data.start_time|format_time }}
+
+                    -
+
+                    {{ data.end_time|format_time }}
+
+                </p>
+
+            </div>
+
+            <div class="col-span-2">
+
+                <p class="text-sm text-gray-500">
+
+                    Alasan
+
+                </p>
+
+                <p>
+
+                    {{ data.reason }}
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="bg-white rounded-xl border shadow">
+
+        <div class="border-b px-6 py-4">
+
+            <h2 class="font-semibold">
+
+                Riwayat Persetujuan
+
+            </h2>
+
+        </div>
+
+        <div class="p-6 space-y-5">
+
+            <div>
+
+                <strong>Disetujui Oleh</strong>
+
+                <p>
+
+                    {{ data.approved_name or "-" }}
+
+                </p>
+
+            </div>
+
+            <div>
+
+                <strong>Tanggal Approve</strong>
+
+                <p>
+
+                    {% if data.approved_at %}
+
+                        {{ data.approved_at|format_date }}
+
+                    {% else %}
+
+                        -
+
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+            <div>
+
+                <strong>Alasan Penolakan</strong>
+
+                <div class="mt-2 bg-gray-50 border rounded-lg p-4">
+
+                    {{ data.rejection_reason or "-" }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

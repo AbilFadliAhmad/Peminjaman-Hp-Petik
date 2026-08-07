@@ -1,0 +1,734 @@
+{% extends 'layouts/base.html' %} {% block title %} Dashboard Santri {% endblock %} {% block content %}
+
+<div class="space-y-6">
+  <!-- Header -->
+
+  <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between w-full">
+        <div>
+          <p class="text-sm font-medium text-blue-600">Perizinan Peminjaman HP</p>
+          <h1 class="mt-1 text-3xl font-bold text-slate-800">Izin pinjam hp</h1>
+          <p class="mt-2 text-slate-500">Ringkasan status pengajuan izin pinjam hp Anda.</p>
+        </div>
+
+        <a href="{{ url_for('santri_history') }}" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"> Lihat Riwayat </a>
+    </div>
+  </div>
+
+    {% if friend_requests %}
+
+<div class="rounded-3xl border border-indigo-200 bg-indigo-50 shadow-lg">
+
+    <div class="border-b border-indigo-200 px-6 py-5">
+
+        <h2 class="text-xl font-bold text-indigo-900">
+
+            👥 Menunggu Persetujuan Anda
+
+        </h2>
+
+        <p class="mt-1 text-sm text-indigo-700">
+
+            Terdapat {{ friend_requests|length }} pengajuan yang menunggu konfirmasi Anda sebelum diteruskan kepada Pengasuhan.
+
+        </p>
+
+    </div>
+
+    <div class="divide-y divide-indigo-200">
+
+    {% for item in friend_requests %}
+
+    <div class="flex items-center justify-between px-6 py-5">
+
+        <h3 class="font-semibold text-slate-800">
+
+            {{ item.borrower_name }}
+
+        </h3>
+
+        <button
+            type="button"
+            class="friend-detail-btn rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700"
+
+            data-id="{{ item.id }}"
+            data-name="{{ item.borrower_name }}"
+            data-reason="{{ item.reason }}">
+
+            Detail
+
+        </button>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+</div>
+
+{% endif %}
+
+  <!-- Status -->
+
+<div class="rounded-3xl border border-slate-200 bg-white p-7 shadow-lg">
+
+    {% if not borrow_detail %}
+    <div class="flex items-center justify-between">
+
+        <div>
+
+            <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">
+
+                Siap Mengajukan
+
+            </span>
+
+            <h2 class="mt-4 text-2xl font-bold text-slate-800">
+
+                Belum Ada Pengajuan
+
+            </h2>
+
+            <p class="mt-2 max-w-2xl leading-7 text-slate-500">
+
+                Saat ini Anda belum memiliki pengajuan peminjaman HP.
+                Apabila membutuhkan HP untuk keperluan tertentu,
+                silakan ajukan peminjaman melalui tombol di bawah ini.
+
+            </p>
+
+            <a
+                href="{{ url_for('santri_borrow') }}"
+                class="mt-6 inline-flex rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700">
+
+                Ajukan Peminjaman
+
+            </a>
+
+        </div>
+
+        <div class="text-7xl">
+
+            ✨
+
+        </div>
+
+    </div>
+
+    {% elif borrow_detail.status == "LOADING" %}
+    <div class="flex items-center justify-between">
+
+    <div>
+
+        <span class="inline-flex rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">
+
+            Menunggu Persetujuan Teman
+
+        </span>
+
+        <h2 class="mt-4 text-2xl font-bold text-slate-800">
+
+            Pengajuan Sedang Menunggu Konfirmasi
+
+        </h2>
+
+        <p class="mt-2 max-w-2xl leading-7 text-slate-500">
+
+            Pengajuan Anda telah berhasil dibuat dan saat ini masih menunggu
+            persetujuan dari teman yang Anda tautkan.
+
+            Setelah teman menyetujui pengajuan ini, permohonan akan
+            diteruskan secara otomatis kepada pihak Pengasuhan untuk
+            dilakukan proses verifikasi.
+
+        </p>
+
+        {% if borrow_detail.friend_name %}
+
+        <div class="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-4">
+
+            <p class="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+
+                Teman yang Ditautkan
+
+            </p>
+
+            <p class="mt-2 text-lg font-semibold text-indigo-800">
+
+                {{ borrow_detail.friend_name }}
+
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <div class="text-7xl">
+
+        👥
+
+    </div>
+
+</div>
+
+    {% elif borrow_detail.status == "PENDING" %}
+    <div class="flex items-center justify-between">
+
+        <div>
+
+            <span class="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-sm font-semibold text-yellow-700">
+
+                Menunggu Verifikasi
+
+            </span>
+
+            <h2 class="mt-4 text-2xl font-bold text-slate-800">
+
+                Pengajuan Sedang Diproses
+
+            </h2>
+
+            <p class="mt-2 max-w-2xl leading-7 text-slate-500">
+
+                Pengajuan Anda telah berhasil dikirim dan saat ini sedang
+                menunggu proses peninjauan oleh pihak Pengasuhan.
+
+                Mohon menunggu hingga Pengasuhan memberikan keputusan
+                terhadap pengajuan tersebut.
+
+            </p>
+
+        </div>
+
+        <div class="text-7xl">
+
+            ⏳
+
+        </div>
+
+    </div>
+
+    {% elif borrow_detail.status == "APPROVED" %}
+    <div class="flex items-center justify-between">
+
+        <div>
+
+            <span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
+
+                Peminjaman Aktif
+
+            </span>
+
+            <h2 class="mt-4 text-2xl font-bold text-slate-800">
+
+                HP Sedang Dipinjam
+
+            </h2>
+
+            <p class="mt-2 max-w-2xl leading-7 text-slate-500">
+
+                Pengajuan Anda telah disetujui oleh Pengasuhan dan saat ini
+                status peminjaman sedang aktif.
+
+                Pastikan HP dikembalikan sebelum waktu peminjaman berakhir.
+
+            </p>
+
+        </div>
+
+        <div class="text-7xl">
+
+            📱
+
+        </div>
+
+    </div>
+
+    {% elif borrow_detail.status == "REJECTED" %}
+    <div class="flex items-center justify-between">
+
+        <div>
+
+            <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-700">
+
+                Pengajuan Ditolak
+
+            </span>
+
+            <h2 class="mt-4 text-2xl font-bold text-slate-800">
+
+                Pengajuan Belum Disetujui
+
+            </h2>
+
+            <p class="mt-2 max-w-2xl leading-7 text-slate-500">
+
+                Pengajuan peminjaman HP belum dapat disetujui oleh pihak
+                Pengasuhan.
+
+                Silakan membaca catatan yang diberikan oleh Pengasuhan,
+                kemudian ajukan kembali apabila masih diperlukan.
+
+            </p>
+
+            <a
+                href="{{ url_for('santri_borrow') }}"
+                class="mt-6 inline-flex rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700">
+
+                Ajukan Kembali
+
+            </a>
+
+        </div>
+
+        <div class="text-7xl">
+
+            ❌
+
+        </div>
+
+    </div>
+
+    {% elif borrow_detail.status == "CANCELLED" %}
+    <div class="flex items-center justify-between">
+
+    <div>
+
+        <span class="inline-flex rounded-full bg-orange-100 px-3 py-1 text-sm font-semibold text-orange-700">
+
+            Dibatalkan Teman
+
+        </span>
+
+        <h2 class="mt-4 text-2xl font-bold text-slate-800">
+
+            Teman Tidak Menyetujui Pengajuan
+
+        </h2>
+
+        <p class="mt-2 max-w-2xl leading-7 text-slate-500">
+
+            Pengajuan peminjaman tidak dapat diteruskan ke Pengasuhan karena
+            teman yang Anda tautkan tidak memberikan persetujuan sebagai
+            pendamping.
+
+            Anda dapat mengajukan kembali dengan memilih teman lain atau
+            mengajukan tanpa menautkan teman.
+
+        </p>
+
+        <a
+            href="{{ url_for('santri_borrow') }}"
+            class="mt-6 inline-flex rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700">
+
+            Ajukan Kembali
+
+        </a>
+
+    </div>
+
+    <div class="text-7xl">
+
+        👥
+
+    </div>
+
+</div>
+    {% endif %}
+
+</div>
+
+  <!-- Pengajuan Terakhir -->
+
+  <div class="rounded-3xl border border-slate-200 bg-white shadow-lg">
+    <div class="border-b px-6 py-5">
+      <h2 class="text-xl font-bold text-slate-800">
+    Detail Pengajuan Saat Ini
+</h2>
+
+<p class="mt-1 text-sm text-slate-500">
+    Informasi mengenai pengajuan peminjaman HP yang sedang tersimpan pada sistem.
+</p>
+    </div>
+
+    <div class="p-6">
+
+{% if borrow_detail %}
+
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+    <div>
+
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+            Status
+
+        </p>
+
+        <div class="mt-2">
+
+            {{ borrow_detail.status|status_badge }}
+
+        </div>
+
+    </div>
+
+    <div>
+
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+            Tanggal Peminjaman
+
+        </p>
+
+        <p class="mt-2 text-slate-700">
+
+            {{ borrow_detail.borrow_date|format_date }}
+
+        </p>
+
+    </div>
+
+    <div>
+
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+            Jam Peminjaman
+
+        </p>
+
+        <p class="mt-2 font-mono text-slate-700">
+
+            {{ borrow_detail.start_time|format_time }}
+            —
+            {{ borrow_detail.end_time|format_time }}
+
+        </p>
+
+    </div>
+
+    <div>
+
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+            Diajukan Pada
+
+        </p>
+
+        <p class="mt-2 text-slate-700">
+
+            {{ borrow_detail.created_at|format_datetime }}
+
+        </p>
+
+    </div>
+
+</div>
+
+<div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 leading-7 text-slate-700">
+
+    <p class="text-xs font-bold uppercase tracking-wide">
+
+        Alasan Peminjaman
+
+    </p>
+
+    <p class="mt-3 leading-7">
+
+        {{ borrow_detail.reason }}
+
+    </p>
+
+</div>
+
+{% if borrow_detail.status != "PENDING" %}
+<div class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 leading-7 text-amber-700">
+    <p class="text-xs font-bold uppercase tracking-wide text-amber-800"> Catatan Pengasuhan </p>
+    <p class="mt-3 leading-7"> {{ borrow_detail.pengasuhan_note }} </p>
+</div>
+{% endif %}
+
+{% if borrow_detail.status == "PENDING" %}
+<div class="mt-8 flex justify-end gap-3">
+
+    <button
+        id="deleteBorrowBtn"
+        data-id="{{ borrow_detail.id }}"
+        class="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-medium text-white transition hover:bg-red-700">
+
+        🗑️ Hapus
+
+    </button>
+
+    <a
+        href="{{ url_for('santri_edit_borrow') }}"
+        class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700">
+
+        ✏️ Edit Pengajuan
+
+    </a>
+
+</div>
+{% endif %}
+
+{% else %}
+
+<div class="flex flex-col items-center justify-center py-12">
+
+    <div class="text-5xl">
+
+        📄
+
+    </div>
+
+    <h3 class="mt-4 text-xl font-semibold text-slate-700">
+
+        Belum Ada Pengajuan
+
+    </h3>
+
+    <p class="mt-2 max-w-lg text-center leading-7 text-slate-500">
+
+        Anda belum memiliki pengajuan peminjaman HP yang dapat ditampilkan.
+        Silakan membuat pengajuan terlebih dahulu apabila diperlukan.
+
+    </p>
+
+</div>
+
+{% endif %}
+
+</div>
+  </div>
+</div>
+<div
+    id="friendRequestModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 p-4">
+
+    <div class="w-full max-w-xl rounded-3xl bg-white shadow-2xl">
+
+        <div class="flex items-start justify-between border-b px-6 py-5">
+
+    <div>
+
+        <h2 class="text-xl font-bold">
+
+            Persetujuan Teman
+
+        </h2>
+
+        <p
+            id="friendBorrower"
+            class="mt-1 text-sm text-slate-500">
+
+        </p>
+
+    </div>
+
+    <button
+        type="button"
+        id="closeFriendModal"
+        class="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+
+        ✕
+
+    </button>
+
+</div>
+
+        <div class="space-y-5 p-6">
+
+            <div>
+
+                <label class="mb-2 block text-sm font-medium">
+
+                    Alasan Pengajuan
+
+                </label>
+
+                <div
+                    id="friendReason"
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 leading-7">
+
+                </div>
+
+            </div>
+
+        </div>
+
+<form
+    id="friendForm"
+    method="POST">
+
+    <div class="flex justify-end gap-3 border-t px-6 py-5">
+
+        <button
+            type="button"
+            id="rejectBtn"
+            class="rounded-xl bg-red-600 px-5 py-2.5 font-medium text-white transition hover:bg-red-700">
+
+            Tolak
+
+        </button>
+
+        <button
+            type="button"
+            id="approveBtn"
+            class="rounded-xl bg-emerald-600 px-5 py-2.5 font-medium text-white transition hover:bg-emerald-700">
+
+            Setujui
+
+        </button>
+
+    </div>
+
+</form>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    const friendModal = document.getElementById("friendRequestModal");
+
+const friendForm = document.getElementById("friendForm");
+
+let currentRequestId = null;
+
+document.querySelectorAll(".friend-detail-btn").forEach(btn => {
+    console.log(btn.dataset)
+
+    btn.addEventListener("click", () => {
+
+        currentRequestId = btn.dataset.id;
+
+        document.getElementById("friendBorrower").innerText =
+            btn.dataset.name;
+
+        document.getElementById("friendReason").innerText =
+            btn.dataset.reason;
+
+        friendModal.classList.remove("hidden");
+
+        friendModal.classList.add("flex");
+
+    });
+
+});
+
+document.getElementById("closeFriendModal").onclick = () => {
+
+    friendModal.classList.remove("flex");
+
+    friendModal.classList.add("hidden");
+
+};
+
+document.getElementById("approveBtn").onclick = async () => {
+
+    const result = await Swal.fire({
+
+        icon: "question",
+
+        title: "Setujui Pengajuan?",
+
+        text: "Pengajuan akan diteruskan ke Pengasuhan untuk diproses.",
+
+        showCancelButton: true,
+
+        confirmButtonText: "Ya, Setujui",
+
+        cancelButtonText: "Batal",
+
+        confirmButtonColor: "#16a34a"
+
+    });
+
+    if (!result.isConfirmed) return;
+
+    friendForm.action =
+        `/friend-request/${currentRequestId}/approve`;
+
+    friendForm.submit();
+
+};
+
+document.getElementById("rejectBtn").onclick = async () => {
+
+    const result = await Swal.fire({
+
+        icon: "warning",
+
+        title: "Tolak Pengajuan?",
+
+        text: "Pengajuan akan dibatalkan dan tidak diteruskan ke Pengasuhan.",
+
+        showCancelButton: true,
+
+        confirmButtonText: "Ya, Tolak",
+
+        cancelButtonText: "Batal",
+
+        confirmButtonColor: "#dc2626"
+
+    });
+
+    if (!result.isConfirmed) return;
+
+    friendForm.action =
+        `/friend-request/${currentRequestId}/reject`;
+
+    friendForm.submit();
+
+};
+
+friendModal.addEventListener("click", e => {
+
+    if (e.target === friendModal) {
+
+        friendModal.classList.remove("flex");
+
+        friendModal.classList.add("hidden");
+
+    }
+
+});
+
+document
+    .getElementById("deleteBorrowBtn")
+    ?.addEventListener("click", async function () {
+
+        const id = this.dataset.id;
+
+        const result = await Swal.fire({
+
+            icon: "warning",
+
+            title: "Hapus Pengajuan?",
+
+            text: "Pengajuan yang dihapus tidak dapat dikembalikan.",
+
+            showCancelButton: true,
+
+            confirmButtonText: "Ya, Hapus",
+
+            cancelButtonText: "Batal",
+
+            confirmButtonColor: "#dc2626"
+
+        });
+
+        if (!result.isConfirmed) return;
+
+        window.location.href =
+            `/santri/borrow/${id}/delete`;
+
+    });
+
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% if status=="PENDING" %}
+
+<span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
+
+    Pending
+
+</span>
+
+{% elif status=="APPROVED" %}
+
+<span class="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
+
+    Approved
+
+</span>
+
+{% elif status=="REJECTED" %}
+
+<span class="px-3 py-1 rounded-full text-xs bg-red-100 text-red-700">
+
+    Rejected
+
+</span>
+
+{% elif status=="FINISHED" %}
+
+<span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-700">
+
+    Finished
+
+</span>
+
+{% endif %}

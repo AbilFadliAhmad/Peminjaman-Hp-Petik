@@ -1,0 +1,39 @@
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+
+    <div class="flex justify-between items-start">
+
+        <div>
+
+            <p class="text-sm text-gray-500">
+
+                {{ title }}
+
+            </p>
+
+            <h2 class="text-3xl font-bold mt-2 text-gray-800">
+
+                {{ value }}
+
+            </h2>
+
+            {% if subtitle %}
+
+            <p class="text-xs text-gray-400 mt-2">
+
+                {{ subtitle }}
+
+            </p>
+
+            {% endif %}
+
+        </div>
+
+        <div class="text-4xl">
+
+            {{ icon }}
+
+        </div>
+
+    </div>
+
+</div>

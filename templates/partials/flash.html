@@ -1,0 +1,45 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    {% for category, message in messages %}
+
+    Swal.fire({
+
+        icon:
+            "{% if category == 'success' %}success{% elif category == 'danger' %}error{% elif category == 'warning' %}warning{% else %}info{% endif %}",
+
+        title:
+            "{% if category == 'success' %}Berhasil{% elif category == 'danger' %}Terjadi Kesalahan{% elif category == 'warning' %}Peringatan{% else %}Informasi{% endif %}",
+
+        text: {{ message|tojson }},
+
+        confirmButtonText: "OK",
+
+        confirmButtonColor: "#2563eb",
+
+        timer:
+            {% if category == "success" %}
+                2500
+            {% else %}
+                null
+            {% endif %},
+
+        timerProgressBar:
+            {% if category == "success" %}
+                true
+            {% else %}
+                false
+            {% endif %}
+
+    });
+
+    {% endfor %}
+
+});
+</script>
+
+{% endif %}
+{% endwith %}
