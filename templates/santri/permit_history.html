@@ -41,10 +41,10 @@
           <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Status </label>
           <select id="statusFilter" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
             <option value="">Semua Status</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Finished">Finished</option>
+            <option value="Menunggu">Menunggu</option>
+            <option value="Disetujui">Disetujui</option>
+            <option value="Ditolak">Ditolak</option>
+            <option value="Selesai">Selesai</option>
           </select>
         </div>
 
@@ -62,7 +62,7 @@
 
     <div class="flex-1">
       <div class="w-full overflow-x-auto">
-        <table id="historyTable" class="min-w-[900px] w-full">
+        <table id="requestsTable" class="min-w-[900px] w-full">
           <thead>
             <tr class="border-b border-slate-200 bg-slate-50">
               <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">No</th>
@@ -104,7 +104,7 @@
 </div>
 {% endblock %} {% block script %}
 <script type="module">
-  import exitPermitHistoryTable from "{{ url_for('static', filename='js/exit-permit-history-table.js') }}";
+  import exitPermitHistoryTable from "{{ url_for('static', filename='js/permits-table.js') }}";
   exitPermitHistoryTable();
 </script>
 {% endblock %}

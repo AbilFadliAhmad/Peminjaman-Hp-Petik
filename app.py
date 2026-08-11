@@ -300,7 +300,8 @@ def get_request_by_id(request_id):
             u.name,
             approver.name AS approved_name,
             rejector.name AS rejected_name,
-            finisher.name AS finished_name
+            finisher.name AS finished_name,
+            friend.name AS friend_name
         FROM borrow_requests br
 
         JOIN users u
@@ -314,6 +315,9 @@ def get_request_by_id(request_id):
 
         LEFT JOIN users finisher
             ON finisher.id = br.finished_by
+            
+        LEFT JOIN users friend
+            ON friend.id = br.friend_user_id
 
         WHERE br.id=%s
         """,
@@ -421,16 +425,65 @@ def pengasuhan_statistics():
 
     stats = {}
 
-    # 1. Total Pengajuan Hari Ini
-    today_result = query(
+    now = datetime.now()
+
+    # 1. Ambil semua data pengajuan hari ini
+    today_requests = query(
         """
-        SELECT COUNT(*) AS total
-        FROM borrow_requests
-        WHERE DATE(start_datetime) = CURDATE()
-        """,
-        one=True
-    )
-    stats["today"] = today_result["total"] if today_result else 0
+        SELECT 
+            br.id, 
+            br.start_datetime, 
+            br.end_datetime, 
+            br.status,
+            u.name 
+        FROM borrow_requests br
+        JOIN users u ON br.user_id = u.id
+        WHERE DATE(br.start_datetime) = CURDATE()
+        """
+    ) or []
+
+    # 2. Total pengajuan hari ini diambil dari jumlah data (length)
+    stats["today"] = len(today_requests)
+
+    late_handphones = []
+
+    # 3. Filter mahasantri yang telat hanya dari data hari ini
+    for req in today_requests:
+        # Hanya cek peminjaman yang disetujui (APPROVED)
+        if req.get("status") == "APPROVED" and req.get("end_datetime"):
+            end_dt = req["end_datetime"]
+
+            # Handle konversi string ke datetime
+            if isinstance(end_dt, str):
+                try:
+                    end_dt = datetime.strptime(end_dt[:19], "%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    end_dt = datetime.strptime(end_dt[:16], "%Y-%m-%d %H:%M")
+
+            # Cek jika batas waktu pengembalian sudah lewat
+            if end_dt < now:
+                diff_seconds = (now - end_dt).total_seconds()
+                total_minutes = int(diff_seconds // 60)
+
+                days = total_minutes // 1440
+                hours = (total_minutes % 1440) // 60
+                mins = total_minutes % 60
+
+                if days > 0:
+                    late_str = f"{days} Hari {hours} Jam"
+                elif hours > 0:
+                    late_str = f"{hours} Jam {mins} Menit"
+                else:
+                    late_str = f"{mins} Menit"
+
+                req["late_minutes"] = total_minutes
+                req["late_str"] = late_str
+                late_handphones.append(req)
+
+    # 4. Urutkan dari yang terlambat paling lama (terbesar ke terkecil)
+    late_handphones.sort(key=lambda x: x["late_minutes"], reverse=True)
+
+    stats["late_handphones"] = late_handphones
 
     # 2. Ringkasan Status Hari Ini (IFNULL Mencegah Nilai None)
     summary_result = query(
@@ -452,8 +505,6 @@ def pengasuhan_statistics():
         "rejected": 0,
         "finished": 0
     }
-
-    print('today_summary: ', stats["today_summary"])
 
     stats["late_chart"] = query("""
         WITH RECURSIVE dates AS (
@@ -2178,17 +2229,21 @@ def pengasuhan_request_detail(request_id):
 
     # Check waktu telat jika ada
     late_minutes = None
-    if data["finished_at"]:
-        deadline = (
-                datetime.combine(
-                    data["borrow_date"],
-                    datetime.min.time()
-                )
-                + data["end_time"]
-        )
+    if data.get("finished_at") and data.get("end_datetime"):
+        finished_at = data["finished_at"]
+        deadline = data["end_datetime"]
+
+        # Konversi ke datetime object jika data berupa string
+        if isinstance(finished_at, str):
+            finished_at = datetime.strptime(finished_at[:19], "%Y-%m-%d %H:%M:%S")
+
+        if isinstance(deadline, str):
+            deadline = datetime.strptime(deadline[:19], "%Y-%m-%d %H:%M:%S")
+
+        # Hitung keterlambatan dalam menit
         late_minutes = max(
             0,
-            int((data["finished_at"] - deadline).total_seconds() // 60)
+            int((finished_at - deadline).total_seconds() // 60)
         )
 
     late_summary = query(

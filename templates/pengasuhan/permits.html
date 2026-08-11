@@ -60,10 +60,10 @@
           <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Status </label>
           <select id="statusFilter" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
             <option value="">Semua Status</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Finished">Finished</option>
+            <option value="Menunggu">Menunggu</option>
+            <option value="Disetujui">Disetujui</option>
+            <option value="Ditolak">Ditolak</option>
+            <option value="Selesai">Selesai</option>
           </select>
         </div>
 
@@ -139,10 +139,8 @@
 </div>
 {% endblock %} {% block script %}
 <script type="module">
-  // Struktur tabel (kolom Santri=1, Keperluan=4, Status=5) sama persis
-  // dengan tabel Pengajuan HP, sehingga script yang sudah ada bisa
-  // dipakai ulang tanpa duplikasi kode.
-  import requestTable from "{{ url_for('static', filename='js/request-table.js') }}";
+  import requestTable from "{{ url_for('static', filename='js/permits-table.js') }}";
+
   requestTable();
 </script>
 {% endblock %}

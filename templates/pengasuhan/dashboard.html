@@ -69,6 +69,38 @@
     </div>
   </div>
 
+  <!-- BAGIAN ALERT MAHASANTRI TELAT -->
+  {% if stats.late_handphones %}
+  <div class="rounded-3xl border border-red-200 bg-white shadow-lg overflow-hidden">
+    <div class="flex items-center justify-between border-b border-red-100 bg-red-50 px-6 py-5">
+      <div>
+        <h2 class="flex items-center gap-2 text-lg font-semibold text-red-800">
+          ⚠️ Peringatan Keterlambatan
+        </h2>
+        <p class="mt-1 text-sm text-red-600">
+          Mahasantri berikut sedang meminjam HP dan telah melewati batas waktu pengembalian.
+        </p>
+      </div>
+      <div class="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
+        {{ stats.late_handphones|length }} Santri
+      </div>
+    </div>
+
+    <div class="divide-y divide-slate-100">
+      {% for late in stats.late_handphones %}
+      <div class="flex items-center justify-between px-6 py-4 transition hover:bg-slate-50">
+        <p class="font-medium text-slate-800">{{ late.name }}</p>
+        <div class="text-right">
+          <span class="inline-flex items-center gap-1.5 rounded-lg bg-red-100 px-3 py-1.5 text-sm font-semibold text-red-700">
+            Telat {{ late.late_str }}
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  <!-- END BAGIAN ALERT MAHASANTRI TELAT -->
   <div class="bg-white rounded-xl shadow border">
     <div class="flex justify-between items-center px-6 py-5 border-b">
       <h2 class="font-semibold text-lg">Aktivitas Terbaru</h2>

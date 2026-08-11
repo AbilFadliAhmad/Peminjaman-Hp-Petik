@@ -169,12 +169,11 @@ function requestTable() {
 
     statusFilter.addEventListener("change", function () {
         const value = this.value.trim().toUpperCase();
-        console.log('value', value)
         if (value === "") {
             filteredRows = [...rows];
         } else {
             filteredRows = rows.filter(row => {
-                const statusCell = row.children[4];
+                const statusCell = row.children[5];
                 const status = statusCell.textContent.trim().toUpperCase();
                 return status.includes(value);
             });
