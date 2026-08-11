@@ -249,27 +249,6 @@ def latest_history(user_id, limit=5):
         (user_id, limit)
     )
 
-def get_history(user_id):
-
-    return query(
-        """
-        SELECT
-            id,
-            reason,
-            borrow_date,
-            start_time,
-            end_time,
-            status,
-            pengasuhan_note,
-            created_at
-        FROM borrow_requests
-        WHERE user_id=%s
-        ORDER BY borrow_date DESC,
-                 start_time DESC
-        """,
-        (user_id,)
-    )
-
 def get_pending_requests():
 
     return query(
@@ -290,26 +269,6 @@ def get_pending_requests():
         ORDER BY br.created_at ASC
         """,
         (STATUS_PENDING,)
-    )
-
-def approve_borrow(request_id, approved_by, pengasuhan_note):
-
-    execute(
-        """
-        UPDATE borrow_requests
-        SET
-            status=%s,
-            approved_by=%s,
-            approved_at=NOW(),
-            pengasuhan_note = %s
-        WHERE id=%s
-        """,
-        (
-            STATUS_APPROVED,
-            approved_by,
-            pengasuhan_note,
-            request_id
-        )
     )
 
 def reject_borrow(request_id, rejected_by, reason):
@@ -379,70 +338,20 @@ def get_request_by_id(request_id):
     data["files"] = raw_files
     return data
 
-def get_all_requests(status=None):
-
-    sql = """
-        SELECT
-
-            br.id,
-            u.name,
-            br.reason,
-            br.borrow_date,
-            br.start_time,
-            br.end_time,
-            br.status,
-            br.created_at,
-            br.approved_at,
-            br.rejected_at
-
-        FROM borrow_requests br
-        JOIN users u
-            ON u.id = br.user_id
-    """
-
-    params = []
-
-    if status:
-
-        sql += " WHERE br.status=%s "
-        params.append(status)
-
-    sql += """
-
-        ORDER BY
-
-            br.created_at DESC
-
-    """
-
-    return query(
-        sql,
-        tuple(params)
-    )
-
 def latest_requests(limit=5):
-
     return query(
         """
         SELECT
-
             br.id,
-
             u.name,
-
             br.status,
-
-            br.borrow_date,
-
+            br.start_datetime,
+            br.end_datetime,
             br.created_at
-
         FROM borrow_requests br
-
         JOIN users u
             ON u.id = br.user_id
-
         ORDER BY br.created_at DESC
-
         LIMIT %s
         """,
         (limit,)
@@ -512,24 +421,39 @@ def pengasuhan_statistics():
 
     stats = {}
 
-    stats["today"] = query(
+    # 1. Total Pengajuan Hari Ini
+    today_result = query(
         """
-        SELECT COUNT(*) total
+        SELECT COUNT(*) AS total
         FROM borrow_requests
-        WHERE borrow_date = CURDATE()
+        WHERE DATE(start_datetime) = CURDATE()
         """,
         one=True
-    )["total"]
+    )
+    stats["today"] = today_result["total"] if today_result else 0
 
-    stats["today_summary"] = query("""
+    # 2. Ringkasan Status Hari Ini (IFNULL Mencegah Nilai None)
+    summary_result = query(
+        """
         SELECT
-            SUM(status='PENDING')   AS pending,
-            SUM(status='APPROVED')  AS approved,
-            SUM(status='REJECTED')  AS rejected,
-            SUM(status='FINISHED')  AS finished
+            IFNULL(SUM(status = 'PENDING'), 0)  AS pending,
+            IFNULL(SUM(status = 'APPROVED'), 0) AS approved,
+            IFNULL(SUM(status = 'REJECTED'), 0) AS rejected,
+            IFNULL(SUM(status = 'FINISHED'), 0) AS finished
         FROM borrow_requests
-        WHERE borrow_date = CURDATE()
-        """, one=True)
+        WHERE DATE(start_datetime) = CURDATE()
+        """,
+        one=True
+    )
+
+    stats["today_summary"] = summary_result or {
+        "pending": 0,
+        "approved": 0,
+        "rejected": 0,
+        "finished": 0
+    }
+
+    print('today_summary: ', stats["today_summary"])
 
     stats["late_chart"] = query("""
         WITH RECURSIVE dates AS (
@@ -633,23 +557,14 @@ def get_koordinator_requests(status=None):
 
     sql = """
         SELECT
-
             br.id,
-
             u.name,
-
             br.reason,
-
             br.borrow_date,
-
             br.start_time,
-
             br.end_time,
-
             br.status,
-
             br.approved_at,
-
             br.created_at
 
         FROM borrow_requests br
@@ -666,18 +581,12 @@ def get_koordinator_requests(status=None):
     ]
 
     if status:
-
         sql += " AND br.status=%s "
         params.append(status)
 
     sql += """
-
         ORDER BY
-
-            br.borrow_date DESC,
-
-            br.start_time DESC
-
+            br.id DESC
     """
 
     return query(
@@ -915,18 +824,17 @@ def inject_global():
 def status_badge(status):
 
     badges = {
-
         STATUS_PENDING:
-            '<span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">Pending</span>',
+            '<span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">Menunggu</span>',
 
         STATUS_APPROVED:
-            '<span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">Approved</span>',
+            '<span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">Disetujui</span>',
 
         STATUS_REJECTED:
-            '<span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">Rejected</span>',
+            '<span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">Ditolak</span>',
 
         STATUS_FINISHED:
-            '<span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Finished</span>'
+            '<span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Selesai</span>'
 
     }
 
@@ -1199,12 +1107,25 @@ def santri_izin_hp():
 @login_required
 @role_required(ROLE_SANTRI)
 def santri_history():
-    user = current_user()
-    history = get_history(user["id"])
+    history = query(
+        """
+        SELECT
+            id,
+            reason,
+            start_datetime,
+            end_datetime,
+            status,
+            pengasuhan_note,
+            created_at
+        FROM borrow_requests
+        WHERE user_id=%s
+        ORDER BY start_datetime DESC
+        """,
+        (session["user_id"],),
+    )
 
     return render_template(
         "santri/history.html",
-        user=user,
         history=history
     )
 
@@ -1324,8 +1245,6 @@ def change_password():
 @login_required
 @role_required(ROLE_SANTRI)
 def friend_request_action(request_id, action):
-    print(request_id, action, 'kata gw')
-
     if action not in ("approve", "reject"):
         flash(
             "Aksi tidak valid.",
@@ -1401,26 +1320,35 @@ def friend_request_action(request_id, action):
 @login_required
 @role_required(ROLE_SANTRI)
 def santri_borrow():
-    user = current_user()
+    FINAL_STATUSES = ["FINISHED", "REJECTED"]
 
-    if has_active_borrow(user["id"]):
+    borrow_id = session.get("borrow_request_id")
+    status_request = query("""
+        SELECT status FROM borrow_requests WHERE id=%s
+    """, (borrow_id,))
+    if status_request and status_request not in FINAL_STATUSES:
         flash("Anda masih memiliki pengajuan atau peminjaman yang aktif.", "warning")
         return redirect(url_for("santri_izin_hp"))
 
     if request.method == "POST":
         reason = request.form.get("reason", "").strip()
-        borrow_date = request.form.get("borrow_date")
+        start_date = request.form.get("start_date")
         start_time = request.form.get("start_time")
+        end_date = request.form.get("end_date")
         end_time = request.form.get("end_time")
         friend_user_id = request.form.get("friend_user_id") or None
-        print(friend_user_id, 'n;opc')
 
-        # Ambil file dari request. Dropzone multiple menggunakan "files[]", form biasa menggunakan "files"
-        uploaded_files = request.files.getlist("files") or request.files.getlist("files[]")
-
-        if not reason or not borrow_date or not start_time or not end_time:
+        # Validasi input wajib
+        if not reason or not start_date or not start_time or not end_date or not end_time:
             flash("Semua field wajib diisi.", "warning")
             return redirect(url_for("santri_borrow"))
+
+        # Gabungkan tanggal dan jam menjadi format DATETIME MySQL (YYYY-MM-DD HH:MM:SS)
+        start_datetime = f"{start_date} {start_time}"
+        end_datetime = f"{end_date} {end_time}"
+
+        # Ambil file dari request
+        uploaded_files = request.files.getlist("files") or request.files.getlist("files[]")
 
         saved_files = []
         if uploaded_files:
@@ -1433,22 +1361,20 @@ def santri_borrow():
                 user_id,
                 reason,
                 files,
-                borrow_date,
-                start_time,
-                end_time,
+                start_datetime,
+                end_datetime,
                 status,
                 friend_user_id
             )
             VALUES
-            (%s,%s,%s,%s,%s,%s,%s, %s)
+            (%s, %s, %s, %s, %s, %s, %s)
             """,
             (
-                user["id"],
+                session["user_id"],
                 reason,
                 json.dumps(saved_files),
-                borrow_date,
-                start_time,
-                end_time,
+                start_datetime,
+                end_datetime,
                 STATUS_LOADING if friend_user_id else STATUS_PENDING,
                 friend_user_id
             )
@@ -1468,7 +1394,7 @@ def santri_borrow():
         AND id != %s
     ORDER BY name
     """, (session["user_id"],))
-    return render_template("santri/borrow.html", user=user, users=users)
+    return render_template("santri/borrow.html", users=users)
 
 @app.route("/santri/borrow/edit", methods=["GET", "POST"])
 @login_required
@@ -1476,13 +1402,8 @@ def santri_borrow():
 def santri_edit_borrow():
     borrow_id = session.get("borrow_request_id")
     if not borrow_id:
-        flash(
-            "Tidak ada pengajuan yang dapat diedit.",
-            "warning"
-        )
-        return redirect(
-            url_for("santri_izin_hp")
-        )
+        flash("Tidak ada pengajuan yang dapat diedit.", "warning")
+        return redirect(url_for("santri_izin_hp"))
 
     borrow = query(
         """
@@ -1493,61 +1414,33 @@ def santri_edit_borrow():
             AND user_id=%s
             AND status=%s
         """,
-        (
-            borrow_id,
-            session["user_id"],
-            STATUS_PENDING
-        ),
-        one=True
+        (borrow_id, session["user_id"], STATUS_PENDING),
+        one=True,
     )
 
     if not borrow:
-        session.pop(
-            "borrow_request_id",
-            None
-        )
-        flash(
-            "Pengajuan sudah diproses sehingga tidak dapat diubah lagi.",
-            "warning"
-        )
-        return redirect(
-            url_for("santri_izin_hp")
-        )
+        session.pop("borrow_request_id", None)
+        flash("Pengajuan sudah diproses sehingga tidak dapat diubah lagi.", "warning")
+        return redirect(url_for("santri_izin_hp"))
 
     if request.method == "POST":
-        reason = request.form.get(
-            "reason",
-            ""
-        ).strip()
-        borrow_date = request.form.get(
-            "borrow_date"
-        )
-        start_time = request.form.get(
-            "start_time"
-        )
-        end_time = request.form.get(
-            "end_time"
-        )
-        friend_user_id = request.form.get('friend_user_id') or None
-        uploaded_files = (
-                request.files.getlist("files")
-                or
-                request.files.getlist("files[]")
-        )
-        if (
-                not reason or
-                not borrow_date or
-                not start_time or
-                not end_time
-        ):
-            flash(
-                "Semua field wajib diisi.",
-                "warning"
-            )
+        reason = request.form.get("reason", "").strip()
+        start_date = request.form.get("start_date")
+        start_time = request.form.get("start_time")
+        end_date = request.form.get("end_date")
+        end_time = request.form.get("end_time")
+        friend_user_id = request.form.get("friend_user_id") or None
 
-            return redirect(
-                url_for("santri_edit_borrow")
-            )
+        uploaded_files = request.files.getlist("files") or request.files.getlist("files[]")
+
+        if not reason or not start_date or not start_time or not end_date or not end_time:
+            flash("Semua field wajib diisi.", "warning")
+            return redirect(url_for("santri_edit_borrow"))
+
+        # Gabungkan tanggal dan jam menjadi format DATETIME (YYYY-MM-DD HH:MM:SS)
+        start_datetime = f"{start_date} {start_time}"
+        end_datetime = f"{end_date} {end_time}"
+
         files = json.loads(borrow["files"]) if borrow["files"] else []
 
         if uploaded_files:
@@ -1559,47 +1452,56 @@ def santri_edit_borrow():
             SET
                 reason=%s,
                 files=%s,
-                borrow_date=%s,
-                start_time=%s,
-                end_time=%s,
+                start_datetime=%s,
+                end_datetime=%s,
                 friend_user_id=%s
             WHERE id=%s
             """,
             (
                 reason,
                 json.dumps(files),
-                borrow_date,
-                start_time,
-                end_time,
+                start_datetime,
+                end_datetime,
                 friend_user_id,
-                borrow["id"]
-            )
+                borrow["id"],
+            ),
         )
 
-        flash(
-            "Pengajuan berhasil diperbarui.",
-            "success"
-        )
-        return redirect(
-            url_for("santri_izin_hp")
-        )
+        flash("Pengajuan berhasil diperbarui.", "success")
+        return redirect(url_for("santri_izin_hp"))
 
-    users = query("""
-        SELECT
-            id,
-            name
+    # Ekstrak DATETIME dari database menjadi Date & Time terpisah untuk mengisi value di HTML
+    if borrow:
+        start_dt = borrow.get("start_datetime")
+        end_dt = borrow.get("end_datetime")
+
+        if hasattr(start_dt, "strftime"):
+            borrow["start_date"] = start_dt.strftime("%Y-%m-%d")
+            borrow["start_time"] = start_dt.strftime("%H:%M")
+        elif start_dt:
+            parts = str(start_dt).split(" ")
+            borrow["start_date"] = parts[0]
+            borrow["start_time"] = parts[1][:5] if len(parts) > 1 else ""
+
+        if hasattr(end_dt, "strftime"):
+            borrow["end_date"] = end_dt.strftime("%Y-%m-%d")
+            borrow["end_time"] = end_dt.strftime("%H:%M")
+        elif end_dt:
+            parts = str(end_dt).split(" ")
+            borrow["end_date"] = parts[0]
+            borrow["end_time"] = parts[1][:5] if len(parts) > 1 else ""
+
+    users = query(
+        """
+        SELECT id, name
         FROM users
-        WHERE
-            role='santri'
-            AND id != %s
+        WHERE role='santri' AND id != %s
         ORDER BY name
-        """, (session["user_id"],))
-
-    return render_template(
-        "santri/borrow.html",
-        borrow=borrow,
-        users=users
+        """,
+        (session["user_id"],),
     )
+
+    return render_template("santri/borrow.html", borrow=borrow, users=users)
 
 @app.get("/santri/borrow/<int:request_id>/delete")
 @login_required
@@ -1767,33 +1669,59 @@ def pengasuhan_dashboard():
 @login_required
 @role_required(ROLE_PENGASUHAN)
 def approve_request(request_id):
-
-    data = get_request_by_id(request_id)
-    pengasuhan_note = request.form.get("pengasuhan_note","").strip()
-
+    # Cek keberadaan data pengajuan
+    data = query("SELECT id FROM borrow_requests WHERE id = %s", (request_id,), one=True)
     if not data:
-        flash(
-            "Pengajuan tidak ditemukan.",
-            "danger"
+        flash("Pengajuan tidak ditemukan.", "danger")
+        return redirect(url_for("pengasuhan_dashboard"))
+
+    pengasuhan_note = request.form.get("pengasuhan_note", "").strip()
+    end_date = request.form.get("end_date")
+    end_time = request.form.get("end_time")
+
+    # Jika tanggal dan jam selesai diisi, update end_datetime
+    if end_date and end_time:
+        end_datetime = f"{end_date} {end_time}"
+        execute(
+            """
+            UPDATE borrow_requests
+            SET
+                status = %s,
+                approved_by = %s,
+                approved_at = NOW(),
+                pengasuhan_note = %s,
+                end_datetime = %s
+            WHERE id = %s
+            """,
+            (
+                STATUS_APPROVED,
+                session["user_id"],
+                pengasuhan_note,
+                end_datetime,
+                request_id,
+            ),
         )
-        return redirect(
-            url_for("pengasuhan_dashboard")
+    else:
+        execute(
+            """
+            UPDATE borrow_requests
+            SET
+                status = %s,
+                approved_by = %s,
+                approved_at = NOW(),
+                pengasuhan_note = %s
+            WHERE id = %s
+            """,
+            (
+                STATUS_APPROVED,
+                session["user_id"],
+                pengasuhan_note,
+                request_id,
+            ),
         )
 
-    approve_borrow(
-        request_id,
-        current_user()["id"],
-        pengasuhan_note
-    )
-
-    flash(
-        "Pengajuan berhasil disetujui.",
-        "success"
-    )
-
-    return redirect(
-        url_for("pengasuhan_requests")
-    )
+    flash("Pengajuan berhasil disetujui.", "success")
+    return redirect(url_for("pengasuhan_requests"))
 
 @app.route(
     "/pengasuhan/reject/<int:request_id>",
@@ -1857,7 +1785,25 @@ def pengasuhan_requests():
     ):
         status = None
 
-    requests = get_all_requests(status)
+    requests = query(
+        """
+                SELECT
+                    br.id,
+                    u.name,
+                    br.reason,
+                    br.start_datetime,
+                    br.end_datetime,
+                    br.status,
+                    br.created_at,
+                    br.approved_at,
+                    br.rejected_at
+                FROM borrow_requests br
+
+                JOIN users u
+                    ON u.id = br.user_id
+                ORDER BY br.id DESC
+            """,()
+        )
 
     return render_template(
         "pengasuhan/requests.html",
@@ -2541,12 +2487,26 @@ def koordinator_requests():
     ):
         status = None
 
-    requests = get_koordinator_requests(status)
+    requests = """
+        SELECT
+            br.id,
+            u.name,
+            br.reason,
+            br.borrow_date,
+            br.start_time,
+            br.end_time,
+            br.status,
+            br.approved_at,
+            br.created_at
+        FROM borrow_requests br
+
+        JOIN users u
+            ON u.id = br.user_id
+    """
 
     return render_template(
 
         "koordinator/requests.html",
-
         requests=requests,
         current_status=status
 

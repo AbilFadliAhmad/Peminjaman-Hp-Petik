@@ -82,46 +82,52 @@
     </div>
 
     <!-- Table -->
-
     <div class="flex-1">
       <div class="w-full overflow-x-auto">
-        <table id="historyTable" class="min-w-[900px] w-full">
+        <table id="historyTable" class="min-w-[950px] w-full">
           <thead>
             <tr class="border-b border-slate-200 bg-slate-50">
               <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">No</th>
-
-              <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Tanggal</th>
-
-              <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Jam</th>
-
+              <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Waktu Mulai</th>
+              <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Waktu Selesai</th>
               <th class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Alasan</th>
-
               <th class="px-4 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
             </tr>
           </thead>
 
           <tbody class="divide-y divide-slate-100">
-            {% if history %} {% for item in history %}
-
+            {% if history %}
+            {% for item in history %}
             <tr class="transition hover:bg-slate-50">
-              <td class="px-4 py-4">{{ loop.index }}</td>
+              <td class="px-4 py-4 text-sm text-slate-500">{{ loop.index }}</td>
 
-              <td class="whitespace-nowrap px-4 py-4">{{ item.borrow_date|format_date }}</td>
-
-              <td class="whitespace-nowrap px-4 py-4 font-mono text-sm">{{ item.start_time|format_time }} — {{ item.end_time|format_time }}</td>
-
-              <td class="px-4 py-4">
-                <div class="max-w-sm truncate" title="{{ item.reason }}">{{ item.reason }}</div>
+              <!-- Waktu Mulai -->
+              <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-700">
+                <div class="font-medium">{{ item.start_datetime|format_date }}</div>
+                <div class="text-xs font-mono text-slate-400">{{ item.start_datetime|format_time }}</div>
               </td>
 
-              <td class="px-4 py-4 text-center">{{ item.status|status_badge }}</td>
-            </tr>
-            {% endfor %} {% else %}
+              <!-- Waktu Selesai -->
+              <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-700">
+                <div class="font-medium">{{ item.end_datetime|format_date }}</div>
+                <div class="text-xs font-mono text-slate-400">{{ item.end_datetime|format_time }}</div>
+              </td>
 
+              <!-- Alasan -->
+              <td class="px-4 py-4 text-sm text-slate-600">
+                <div class="max-w-xs truncate" title="{{ item.reason }}">{{ item.reason }}</div>
+              </td>
+
+              <!-- Status -->
+              <td class="px-4 py-4 text-center">
+                {{ item.status|status_badge }}
+              </td>
+            </tr>
+            {% endfor %}
+            {% else %}
             <tr>
-              <td colspan="5" class="py-16 text-center text-slate-500">Belum ada riwayat peminjaman.</td>
+              <td colspan="6" class="py-16 text-center text-slate-500">Belum ada riwayat peminjaman.</td>
             </tr>
-
             {% endif %}
           </tbody>
         </table>

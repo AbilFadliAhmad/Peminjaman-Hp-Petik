@@ -9,277 +9,184 @@
     </div>
 
     <a
-    href="{% if current_user_role == 'pengasuhan' %}
+      href="{% if current_user_role == 'pengasuhan' %}
             {{ url_for('pengasuhan_requests') }}
           {% else %}
             {{ url_for('santri_history') }}
           {% endif %}"
-    class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
-
-    Kembali
-
-</a>
+      class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+    >
+      Kembali
+    </a>
   </div>
 
   {% if current_user_role == "pengasuhan" %}
 
-<div class="grid gap-6 lg:grid-cols-2">
-
+  <div class="grid gap-6 lg:grid-cols-2">
     <!-- Riwayat -->
 
     <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
+      <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
+        <h2 class="text-lg font-semibold text-slate-800">Riwayat Keterlambatan</h2>
 
-        <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
+        <p class="mt-1 text-sm text-slate-500">Rekap keterlambatan pengembalian HP oleh mahasantri.</p>
+      </div>
 
-            <h2 class="text-lg font-semibold text-slate-800">
+      <div class="space-y-5 p-6">
+        {% if late_minutes %}
 
-                Riwayat Keterlambatan
+        <div class="rounded-2xl bg-red-50 p-4">
+          <p class="text-xs font-semibold uppercase tracking-wide text-red-600">Telat</p>
 
-            </h2>
-
-            <p class="mt-1 text-sm text-slate-500">
-
-                Rekap keterlambatan pengembalian HP oleh mahasantri.
-
-            </p>
-
+          <p class="mt-2 text-xl font-bold text-red-700">{{ late_minutes|format_late }}</p>
         </div>
 
-        <div class="space-y-5 p-6">
+        {% endif %}
 
-            {% if late_minutes %}
+        <div class="grid grid-cols-2 gap-4">
+          <div class="rounded-2xl bg-slate-50 p-4">
+            <p class="text-xs font-semibold uppercase text-slate-500">Total Terlambat</p>
 
-            <div class="rounded-2xl bg-red-50 p-4">
+            <p class="mt-2 text-lg font-bold text-slate-800">{{ late_summary.total_minutes|format_late }}</p>
+          </div>
 
-                <p class="text-xs font-semibold uppercase tracking-wide text-red-600">
+          <div class="rounded-2xl bg-slate-50 p-4">
+            <p class="text-xs font-semibold uppercase text-slate-500">Jumlah Kejadian</p>
 
-                    Pengajuan Ini
+            <p class="mt-2 text-lg font-bold text-slate-800">{{ late_summary.total_late }} Kali</p>
+          </div>
 
-                </p>
+          <div class="rounded-2xl bg-slate-50 p-4">
+            <p class="text-xs font-semibold uppercase text-slate-500">Terlama</p>
 
-                <p class="mt-2 text-xl font-bold text-red-700">
+            <p class="mt-2 text-lg font-bold text-slate-800">{{ late_summary.max_minutes|format_late }}</p>
+          </div>
 
-                    {{ late_minutes|format_late }}
+          <div class="rounded-2xl bg-slate-50 p-4">
+            <p class="text-xs font-semibold uppercase text-slate-500">Rata-rata</p>
 
-                </p>
-
-            </div>
-
-            {% endif %}
-
-            <div class="grid grid-cols-2 gap-4">
-
-                <div class="rounded-2xl bg-slate-50 p-4">
-
-                    <p class="text-xs font-semibold uppercase text-slate-500">
-
-                        Total Terlambat
-
-                    </p>
-
-                    <p class="mt-2 text-lg font-bold text-slate-800">
-
-                        {{ late_summary.total_minutes|format_late }}
-
-                    </p>
-
-                </div>
-
-                <div class="rounded-2xl bg-slate-50 p-4">
-
-                    <p class="text-xs font-semibold uppercase text-slate-500">
-
-                        Jumlah Kejadian
-
-                    </p>
-
-                    <p class="mt-2 text-lg font-bold text-slate-800">
-
-                        {{ late_summary.total_late }} Kali
-
-                    </p>
-
-                </div>
-
-                <div class="rounded-2xl bg-slate-50 p-4">
-
-                    <p class="text-xs font-semibold uppercase text-slate-500">
-
-                        Terlama
-
-                    </p>
-
-                    <p class="mt-2 text-lg font-bold text-slate-800">
-
-                        {{ late_summary.max_minutes|format_late }}
-
-                    </p>
-
-                </div>
-
-                <div class="rounded-2xl bg-slate-50 p-4">
-
-                    <p class="text-xs font-semibold uppercase text-slate-500">
-
-                        Rata-rata
-
-                    </p>
-
-                    <p class="mt-2 text-lg font-bold text-slate-800">
-
-                        {{ late_summary.avg_minutes|int|format_late }}
-
-                    </p>
-
-                </div>
-
-            </div>
-
+            <p class="mt-2 text-lg font-bold text-slate-800">{{ late_summary.avg_minutes|int|format_late }}</p>
+          </div>
         </div>
-
+      </div>
     </div>
 
     <!-- Analisis -->
 
     <div
-        class="overflow-hidden rounded-3xl border
-        {% if recommendation.level == 'good' %}
-            border-emerald-200
-        {% elif recommendation.level == 'warning' %}
-            border-yellow-200
-        {% elif recommendation.level == 'danger' %}
-            border-orange-200
-        {% else %}
-            border-red-200
-        {% endif %}
-        bg-white shadow-lg">
+      class="overflow-hidden rounded-3xl border {% if recommendation.level == 'good' %} border-emerald-200 {% elif recommendation.level == 'warning' %} border-yellow-200 {% elif recommendation.level == 'danger' %} border-orange-200 {% else %} border-red-200 {% endif %} bg-white shadow-lg"
+    >
+      <div class="border-b px-6 py-5 {% if recommendation.level == 'good' %} bg-emerald-50 {% elif recommendation.level == 'warning' %} bg-yellow-50 {% elif recommendation.level == 'danger' %} bg-orange-50 {% else %} bg-red-50 {% endif %}">
+        <h2 class="text-lg font-semibold">Analisis Riwayat Mahasantri</h2>
 
-        <div
-            class="border-b px-6 py-5
-            {% if recommendation.level == 'good' %}
-                bg-emerald-50
-            {% elif recommendation.level == 'warning' %}
-                bg-yellow-50
-            {% elif recommendation.level == 'danger' %}
-                bg-orange-50
-            {% else %}
-                bg-red-50
-            {% endif %}">
+        <p class="mt-1 text-sm text-slate-600">Rekomendasi berdasarkan riwayat keterlambatan sebelumnya.</p>
+      </div>
 
-            <h2 class="text-lg font-semibold">
+      <div class="space-y-5 p-6">
+        <div>
+          <p class="text-xs font-semibold uppercase text-slate-500">Status</p>
 
-                Analisis Riwayat Mahasantri
-
-            </h2>
-
-            <p class="mt-1 text-sm text-slate-600">
-
-                Rekomendasi berdasarkan riwayat keterlambatan sebelumnya.
-
-            </p>
-
+          <p class="mt-2 text-2xl font-bold">{{ recommendation.title }}</p>
         </div>
 
-        <div class="space-y-5 p-6">
+        <div class="rounded-2xl bg-slate-50 p-5 leading-7 text-slate-700">{{ recommendation.message }}</div>
 
-            <div>
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-sm text-slate-600">
+            <strong>Catatan:</strong>
 
-                <p class="text-xs font-semibold uppercase text-slate-500">
-
-                    Status
-
-                </p>
-
-                <p class="mt-2 text-2xl font-bold">
-
-                    {{ recommendation.title }}
-
-                </p>
-
-            </div>
-
-            <div class="rounded-2xl bg-slate-50 p-5 leading-7 text-slate-700">
-
-                {{ recommendation.message }}
-
-            </div>
-
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-
-                <p class="text-sm text-slate-600">
-
-                    <strong>Catatan:</strong>
-
-                    Informasi ini hanya digunakan sebagai bahan pertimbangan
-                    bagi Pengasuhan.
-
-                    Keputusan menerima atau menolak pengajuan tetap berada
-                    pada kebijakan Pengasuhan dengan mempertimbangkan alasan
-                    pengajuan, kondisi mahasantri, serta kebutuhan saat ini.
-
-                </p>
-
-            </div>
-
+            Informasi ini hanya digunakan sebagai bahan pertimbangan bagi Pengasuhan. Keputusan menerima atau menolak pengajuan tetap berada pada kebijakan Pengasuhan dengan mempertimbangkan alasan pengajuan, kondisi mahasantri, serta
+            kebutuhan saat ini.
+          </p>
         </div>
-
-    </div>
-
-</div>
-
-{% endif %}
-
-  <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
-    <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
-      <h2 class="text-lg font-semibold text-slate-800">Informasi Pengajuan</h2>
-
-      <p class="mt-1 text-sm text-slate-500">Informasi dasar mengenai pengajuan peminjaman HP.</p>
-    </div>
-
-    <div class="grid grid-cols-1 gap-6 p-6 lg:grid-cols-2">
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Nama Mahasantri</p>
-
-        <p class="mt-2 text-base font-semibold text-slate-800">{{ data.name }}</p>
       </div>
-
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>
-
-        <div class="mt-2">{{ data.status|status_badge }}</div>
-      </div>
-
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tanggal Peminjaman</p>
-
-        <p class="mt-2 text-slate-700">{{ data.borrow_date|format_date }}</p>
-      </div>
-
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Jam Peminjaman</p>
-
-        <p class="mt-2 font-mono text-slate-700">{{ data.start_time|format_time }} — {{ data.end_time|format_time }}</p>
-      </div>
-
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Dibuat Pada</p>
-
-        <p class="mt-2 text-slate-700">{{ data.created_at|format_datetime if data.created_at else "-" }}</p>
-      </div>
-
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Catatan Pengasuhan</p>
-
-        <p class="mt-2 text-slate-700">{{ data.pengasuhan_note or "-" }}</p>
-      </div>
-    </div>
-
-    <div class="border-t border-slate-200 bg-slate-50 px-6 py-6">
-      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Alasan Peminjaman</p>
-
-      <div class="mt-3 rounded-2xl border border-slate-200 bg-white p-5 leading-7 text-slate-700">{{ data.reason }}</div>
     </div>
   </div>
+
+  {% endif %}
+
+  <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
+  <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
+    <h2 class="text-lg font-semibold text-slate-800">Informasi Pengajuan</h2>
+    <p class="mt-1 text-sm text-slate-500">Informasi dasar mengenai pengajuan peminjaman HP.</p>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 p-6 lg:grid-cols-2">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Nama Mahasantri</p>
+      <p class="mt-2 text-base font-semibold text-slate-800">{{ data.name }}</p>
+    </div>
+
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>
+      <div class="mt-2">{{ data.status|status_badge }}</div>
+    </div>
+
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Mulai Peminjaman</p>
+      <p class="mt-2 text-slate-700">{{ data.start_datetime|format_datetime if data.start_datetime else "-" }}</p>
+    </div>
+
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Selesai Peminjaman</p>
+      <p class="mt-2 text-slate-700">{{ data.end_datetime|format_datetime if data.end_datetime else "-" }}</p>
+    </div>
+
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Dibuat Pada</p>
+      <p class="mt-2 text-slate-700">{{ data.created_at|format_datetime if data.created_at else "-" }}</p>
+    </div>
+
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Catatan Pengasuhan</p>
+      <p class="mt-2 text-slate-700">{{ data.pengasuhan_note or "-" }}</p>
+    </div>
+
+    <!-- Informasi Disetujui Oleh -->
+    {% if data.approved_name %}
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Disetujui Oleh</p>
+      <p class="mt-2 text-slate-700">
+        <span class="font-semibold text-slate-800">{{ data.approved_name }}</span>
+        {% if data.approved_at %}
+        <span class="block text-xs text-slate-400 mt-0.5">{{ data.approved_at|format_datetime }}</span>
+        {% endif %}
+      </p>
+    </div>
+    {% endif %}
+
+    <!-- Informasi Ditolak Oleh -->
+    {% if data.rejected_name %}
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Ditolak Oleh</p>
+      <p class="mt-2 text-slate-700">
+        <span class="font-semibold text-slate-800">{{ data.rejected_name }}</span>
+        {% if data.rejected_at %}
+        <span class="block text-xs text-slate-400 mt-0.5">{{ data.rejected_at|format_datetime }}</span>
+        {% endif %}
+      </p>
+    </div>
+    {% endif %}
+
+    <!-- Informasi Dikembalikan / Diselesaikan Oleh -->
+    {% if data.finished_name %}
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Dikembalikan Oleh</p>
+      <p class="mt-2 text-slate-700">
+        <span class="font-semibold text-slate-800">{{ data.finished_name }}</span>
+        {% if data.finished_at %}
+        <span class="block text-xs text-slate-400 mt-0.5">{{ data.finished_at|format_datetime }}</span>
+        {% endif %}
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="border-t border-slate-200 bg-slate-50 px-6 py-6">
+    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Alasan Peminjaman</p>
+    <div class="mt-3 rounded-2xl border border-slate-200 bg-white p-5 leading-7 text-slate-700">{{ data.reason }}</div>
+  </div>
+</div>
 
   <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
     <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
@@ -316,31 +223,14 @@
         </div>
 
         <div class="flex items-center gap-2">
+          {% if file.mime.startswith("image/") or file.mime.startswith("video/") or file.mime == "application/pdf" %}
 
-    {% if file.mime.startswith("image/")
-       or file.mime.startswith("video/")
-       or file.mime == "application/pdf" %}
+          <a href="{{ url_for('borrow_file_view', file_path=file.path) }}" target="_blank" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"> Lihat </a>
 
-    <a
-        href="{{ url_for('borrow_file_view', file_path=file.path) }}"
-        target="_blank"
-        class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
+          {% endif %}
 
-        Lihat
-
-    </a>
-
-    {% endif %}
-
-    <a
-        href="{{ url_for('borrow_file_download', file_path=file.path) }}"
-        class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
-
-        Download
-
-    </a>
-
-</div>
+          <a href="{{ url_for('borrow_file_download', file_path=file.path) }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"> Download </a>
+        </div>
       </div>
 
       {% endfor %}
@@ -362,116 +252,90 @@
 {% if current_user_role == "pengasuhan" %}
 
 <div class="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
+  <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
+    <h2 class="text-lg font-semibold text-slate-800">Keputusan Pengajuan</h2>
+    <p class="mt-1 text-sm text-slate-500">Berikan keputusan atau sesuaikan batas waktu pengembalian HP.</p>
+  </div>
 
-    <div class="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
+  <form method="POST" id="decisionForm">
+    <div class="space-y-6 p-6">
 
-        <h2 class="text-lg font-semibold text-slate-800">
-
-            Keputusan Pengajuan
-
-        </h2>
-
-        <p class="mt-1 text-sm text-slate-500">
-
-            Berikan atau ubah keputusan terhadap pengajuan ini.
-
-        </p>
-
-    </div>
-
-    <form
-        method="POST"
-        id="decisionForm">
-
-        <div class="space-y-6 p-6">
-
-            <div>
-
-                <label
-                    for="pengasuhan_note"
-                    class="mb-2 block text-sm font-medium text-slate-700">
-
-                    Catatan Pengasuhan
-
-                </label>
-
-                <textarea
-                    id="pengasuhan_note"
-                    name="pengasuhan_note"
-                    rows="5"
-                    class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                >{{ data.pengasuhan_note or "" }}</textarea>
-
-            </div>
-
-            {% if data.status == "APPROVED" %}
-
-            <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-
-                <p class="font-semibold text-emerald-700">
-
-                    Pengajuan ini telah disetujui.
-
-                </p>
-
-                <p class="mt-1 text-sm text-emerald-600">
-
-                    Anda masih dapat mengubah keputusan apabila diperlukan.
-
-                </p>
-
-            </div>
-
-            {% elif data.status == "REJECTED" %}
-
-            <div class="rounded-2xl border border-red-200 bg-red-50 p-4">
-
-                <p class="font-semibold text-red-700">
-
-                    Pengajuan ini telah ditolak.
-
-                </p>
-
-                <p class="mt-1 text-sm text-red-600">
-
-                    Anda masih dapat mengubah keputusan apabila diperlukan.
-
-                </p>
-
-            </div>
-
-            {% endif %}
-
-            <div class="flex justify-end gap-3">
-
-                <button
-                    type="submit"
-                    formaction="{{ url_for('reject_request', request_id=data.id) }}"
-                    class="decision-btn rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-red-700"
-                    data-title="Tolak Pengajuan?"
-                    data-text="Pengajuan akan ditolak.">
-
-                    Tolak
-
-                </button>
-
-                <button
-                    type="submit"
-                    formaction="{{ url_for('approve_request', request_id=data.id) }}"
-                    class="decision-btn rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700"
-                    data-title="Setujui Pengajuan?"
-                    data-text="Pengajuan akan disetujui.">
-
-                    Setujui
-
-                </button>
-
-            </div>
-
+      <!-- Penyesuaian Tanggal & Jam Selesai -->
+      <div>
+        <label class="mb-2 block text-sm font-semibold text-slate-700">Penyesuaian Waktu Pengembalian</label>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label for="end_date" class="mb-1 block text-xs font-medium text-slate-500">Tanggal Selesai</label>
+            <input
+              type="date"
+              id="end_date"
+              name="end_date"
+              value="{{ data.end_datetime.strftime('%Y-%m-%d') if data.end_datetime and data.end_datetime.strftime else (data.end_datetime.split(' ')[0] if data.end_datetime else '') }}"
+              class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+              required
+            />
+          </div>
+          <div>
+            <label for="end_time" class="mb-1 block text-xs font-medium text-slate-500">Jam Selesai</label>
+            <input
+              type="time"
+              id="end_time"
+              name="end_time"
+              value="{{ data.end_datetime.strftime('%H:%M') if data.end_datetime and data.end_datetime.strftime else (data.end_datetime.split(' ')[1][:5] if data.end_datetime else '') }}"
+              class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+              required
+            />
+          </div>
         </div>
+      </div>
 
-    </form>
+      <!-- Catatan Pengasuhan -->
+      <div>
+        <label for="pengasuhan_note" class="mb-2 block text-sm font-medium text-slate-700">Catatan Pengasuhan</label>
+        <textarea
+          id="pengasuhan_note"
+          name="pengasuhan_note"
+          rows="4"
+          placeholder="Tuliskan catatan tambahan (opsional)..."
+          class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+        >{{ data.pengasuhan_note or "" }}</textarea>
+      </div>
 
+      {% if data.status == "APPROVED" %}
+      <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+        <p class="font-semibold text-emerald-700">Pengajuan ini telah disetujui.</p>
+        <p class="mt-1 text-sm text-emerald-600">Anda masih dapat memperbarui catatan atau batas waktu pengembalian apabila diperlukan.</p>
+      </div>
+      {% elif data.status == "REJECTED" %}
+      <div class="rounded-2xl border border-red-200 bg-red-50 p-4">
+        <p class="font-semibold text-red-700">Pengajuan ini telah ditolak.</p>
+        <p class="mt-1 text-sm text-red-600">Anda masih dapat mengubah keputusan apabila diperlukan.</p>
+      </div>
+      {% endif %}
+
+      <div class="flex justify-end gap-3">
+        <button
+          type="submit"
+          formaction="{{ url_for('reject_request', request_id=data.id) }}"
+          class="decision-btn rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-red-700"
+          data-title="Tolak Pengajuan?"
+          data-text="Pengajuan akan ditolak."
+        >
+          Tolak
+        </button>
+
+        <button
+          type="submit"
+          formaction="{{ url_for('approve_request', request_id=data.id) }}"
+          class="decision-btn rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700"
+          data-title="Setujui Pengajuan?"
+          data-text="Pengajuan akan disetujui dengan batas waktu yang ditentukan."
+        >
+          Setujui
+        </button>
+      </div>
+    </div>
+  </form>
 </div>
 
 {% else %}
@@ -488,54 +352,49 @@
   </div>
 </div>
 
-{% endif %}
-
-{% endblock %}
-
-{% block script %}
+{% endif %} {% endblock %} {% block script %}
 <script>
-    document.querySelectorAll(".decision-btn").forEach(button => {
+  document.querySelectorAll(".decision-btn").forEach((button) => {
+    button.addEventListener("click", function (e) {
+      e.preventDefault();
+      const form = this.form;
+      const action = this.getAttribute("formaction");
 
-    button.addEventListener("click", function(e){
-
-        e.preventDefault();
-
-        const form = this.form;
-
-        const action = this.getAttribute("formaction");
-
-        Swal.fire({
-
-            title: this.dataset.title,
-
-            text: this.dataset.text,
-
-            icon: "question",
-
-            showCancelButton: true,
-
+      const endDate = document.getElementById("end_date").value;
+      const endTime = document.getElementById("end_time").value;
+      const startDatetimeStr = "{{ data.start_datetime }}"; // start_datetime dikirim dari backend Jinja2
+      if (endDate && endTime && startDatetimeStr) {
+        const newEnd = new Date(`${endDate}T${endTime}`);
+        const start = new Date(startDatetimeStr.replace(" ", "T"));
+        if (newEnd <= start) {
+          e.preventDefault();
+          Swal.fire({
+            icon: "error",
+            title: "Waktu Tidak Valid",
+            text: "Waktu pengembalian (selesai) tidak boleh lebih awal dari waktu mulai peminjaman.",
             confirmButtonColor: "#2563eb",
+          });
+          return
+        }
+      }
 
-            cancelButtonColor: "#64748b",
+      Swal.fire({
+        title: this.dataset.title,
+        text: this.dataset.text,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#2563eb",
+        cancelButtonColor: "#64748b",
+        confirmButtonText: "Ya, Lanjutkan",
+        cancelButtonText: "Batal",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.action = action;
 
-            confirmButtonText: "Ya, Lanjutkan",
-
-            cancelButtonText: "Batal"
-
-        }).then(result => {
-
-            if(result.isConfirmed){
-
-                form.action = action;
-
-                form.submit();
-
-            }
-
-        });
-
+          form.submit();
+        }
+      });
     });
-
-});
+  });
 </script>
 {% endblock %}

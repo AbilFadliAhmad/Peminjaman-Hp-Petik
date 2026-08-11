@@ -26,25 +26,25 @@
 
           <div class="mt-8 grid grid-cols-2 gap-3">
             <div class="rounded-2xl bg-yellow-50 p-4">
-              <p class="text-xs font-semibold uppercase text-yellow-700">Pending</p>
+              <p class="text-xs font-semibold uppercase text-yellow-700">menunggu</p>
 
               <p class="mt-2 text-2xl font-bold">{{ stats.today_summary.pending }}</p>
             </div>
 
             <div class="rounded-2xl bg-blue-50 p-4">
-              <p class="text-xs font-semibold uppercase text-blue-700">Approved</p>
+              <p class="text-xs font-semibold uppercase text-blue-700">disetujui</p>
 
               <p class="mt-2 text-2xl font-bold">{{ stats.today_summary.approved }}</p>
             </div>
 
             <div class="rounded-2xl bg-red-50 p-4">
-              <p class="text-xs font-semibold uppercase text-red-700">Rejected</p>
+              <p class="text-xs font-semibold uppercase text-red-700">Ditolak</p>
 
               <p class="mt-2 text-2xl font-bold">{{ stats.today_summary.rejected }}</p>
             </div>
 
             <div class="rounded-2xl bg-green-50 p-4">
-              <p class="text-xs font-semibold uppercase text-green-700">Finished</p>
+              <p class="text-xs font-semibold uppercase text-green-700">selesai</p>
 
               <p class="mt-2 text-2xl font-bold">{{ stats.today_summary.finished }}</p>
             </div>
@@ -77,28 +77,27 @@
     </div>
 
     {% if latest %}
-
-    <div class="divide-y">
+    <div class="divide-y divide-slate-100">
       {% for item in latest %}
-
-      <div class="px-6 py-4 flex justify-between items-center">
+      <div class="px-6 py-4 flex justify-between items-center transition hover:bg-slate-50">
         <div>
-          <p class="font-medium">{{ item.name }}</p>
-
-          <p class="text-sm text-gray-500">{{ item.borrow_date|format_date }}</p>
+          <p class="font-medium text-slate-800">{{ item.name }}</p>
+          <!-- Format Tanggal & Jam Mulai — Selesai -->
+          <p class="text-sm text-slate-500">
+            {{ item.start_datetime|format_date }}
+            <span class="text-xs text-slate-400 font-mono">({{ item.start_datetime|format_time }} — {{ item.end_datetime|format_time }})</span>
+          </p>
         </div>
 
-        <div>{{ item.status|status_badge }}</div>
+        <div>
+          {{ item.status|status_badge }}
+        </div>
       </div>
-
       {% endfor %}
     </div>
-
     {% else %}
-
-    <div class="py-12 text-center text-gray-500">Belum ada aktivitas.</div>
-
-    {% endif %}
+    <div class="py-12 text-center text-slate-500">Belum ada aktivitas.</div>
+  {% endif %}
   </div>
 </div>
 
