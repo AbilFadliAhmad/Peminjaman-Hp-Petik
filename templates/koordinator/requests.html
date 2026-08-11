@@ -187,196 +187,112 @@ Peminjaman Aktif
 
         <div class="overflow-x-auto">
 
-            <table
-                id="requestsTable"
-                class="min-w-[900px] w-full">
-
-                <thead>
-
-                <tr class="border-b border-slate-200 bg-slate-50">
-
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-
-                        No
-
-                    </th>
-
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-
-                        Santri
-
-                    </th>
-
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-
-                        Tanggal
-
-                    </th>
-
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-
-                        Jam
-
-                    </th>
-
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-
-                        Alasan
-
-                    </th>
-
-                    <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-
-                        Status
-
-                    </th>
-
-                    <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-
-                        Aksi
-
-                    </th>
-
-                </tr>
-
-                </thead>
-
-                <tbody class="divide-y divide-slate-100">
-
-                {% if requests %}
-
-                    {% for item in requests %}
-
-                    <tr class="hover:bg-slate-50 transition">
-
-                        <td class="px-6 py-4">
-
-                            {{ loop.index }}
-
-                        </td>
-
-                        <td class="px-6 py-4">
-
-                            <div class="flex items-center gap-3">
-
-                                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-700">
-
-                                    {{ item.name[:1]|upper }}
-
-                                </div>
-
-                                <div>
-
-                                    <p class="font-semibold text-slate-800">
-
-                                        {{ item.name }}
-
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                        </td>
-
-                        <td class="px-6 py-4 whitespace-nowrap">
-
-                            {{ item.borrow_date|format_date }}
-
-                        </td>
-
-                        <td class="px-6 py-4 whitespace-nowrap font-mono text-sm">
-
-                            {{ item.start_time|format_time }}
-                            —
-                            {{ item.end_time|format_time }}
-
-                        </td>
-
-                        <td class="px-6 py-4">
-
-                            <div
-                                class="max-w-xs truncate"
-                                title="{{ item.reason }}">
-
-                                {{ item.reason }}
-
-                            </div>
-
-                        </td>
-
-                        <td class="px-6 py-4 text-center">
-
-                            {{ item.status|status_badge }}
-
-                        </td>
-
-                        <td class="px-6 py-4">
-
-                            <div class="flex justify-center">
-
-                                {% if item.status == "APPROVED" %}
-
-<form
-    method="POST"
-    action="{{ url_for('finish_request', request_id=item.id) }}"
-    class="finish-form"
-    id="finishForm">
-
-    <input
-        type="hidden"
-        name="finished_at"
-        class="finishedAt">
-
-    <button
-        type="submit"
-        class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700">
-
-        Dikembalikan
-
-    </button>
-
-</form>
-
-{% elif item.status == "FINISHED" %}
-
-<span
-    class="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600">
-
-    ✔ Sudah Selesai
-
-</span>
-
-{% endif %}
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                {% else %}
-
-                    <tr>
-
-                        <td
-                            colspan="7"
-                            class="py-16 text-center text-slate-500">
-
-                            Tidak ada data.
-
-                        </td>
-
-                    </tr>
-
-                {% endif %}
-
-                </tbody>
-
-            </table>
-
+            <table id="requestsTable" class="min-w-[900px] w-full">
+  <thead>
+    <tr class="border-b border-slate-200 bg-slate-50">
+      <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+        No
+      </th>
+
+      <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Santri
+      </th>
+
+      <!-- Kolom Gabungan Waktu Peminjaman -->
+      <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Waktu Peminjaman
+      </th>
+
+      <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Alasan
+      </th>
+
+      <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Status
+      </th>
+
+      <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Aksi
+      </th>
+    </tr>
+  </thead>
+
+  <tbody class="divide-y divide-slate-100">
+    {% if requests %}
+      {% for item in requests %}
+      <tr class="transition hover:bg-slate-50">
+        <td class="px-6 py-4">
+          {{ loop.index }}
+        </td>
+
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-700">
+              {{ item.name[:1]|upper }}
+            </div>
+            <div>
+              <p class="font-semibold text-slate-800">
+                {{ item.name }}
+              </p>
+            </div>
+          </div>
+        </td>
+
+        <!-- Waktu Peminjaman: Tanggal di atas, Jam di bawah -->
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm font-medium text-slate-800">
+            {{ item.start_datetime|format_date }} — {{ item.end_datetime|format_date }}
+          </div>
+          <div class="mt-0.5 font-mono text-xs text-slate-400">
+            {{ item.start_datetime|format_time }} — {{ item.end_datetime|format_time }}
+          </div>
+        </td>
+
+        <td class="px-6 py-4">
+          <div class="max-w-xs truncate" title="{{ item.reason }}">
+            {{ item.reason }}
+          </div>
+        </td>
+
+        <td class="px-6 py-4 text-center">
+          {{ item.status|status_badge }}
+        </td>
+
+        <td class="px-6 py-4">
+          <div class="flex justify-center">
+            {% if item.status == "APPROVED" %}
+            <form
+              method="POST"
+              action="{{ url_for('finish_request', request_id=item.id) }}"
+              class="finish-form"
+              id="finishForm"
+            >
+              <input type="hidden" name="finished_at" class="finishedAt" />
+              <button
+                type="submit"
+                class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
+              >
+                Dikembalikan
+              </button>
+            </form>
+            {% elif item.status == "FINISHED" %}
+            <span class="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600">
+              ✔ Sudah Selesai
+            </span>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <td colspan="6" class="py-16 text-center text-slate-500">
+          Tidak ada data.
+        </td>
+      </tr>
+    {% endif %}
+  </tbody>
+</table>
         </div>
 
         <!-- Pagination -->

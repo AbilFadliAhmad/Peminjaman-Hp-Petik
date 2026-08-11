@@ -516,7 +516,6 @@ def koordinator_statistics():
         (STATUS_APPROVED,),
         one=True
     )["total"]
-
     return stats
 
 def latest_active(limit=5):
@@ -524,27 +523,17 @@ def latest_active(limit=5):
     return query(
         """
         SELECT
-
             br.id,
-
             u.name,
-
-            br.borrow_date,
-
+            br.start_datetime,
             br.status,
-
             br.approved_at
 
         FROM borrow_requests br
-
         JOIN users u
-
             ON u.id=br.user_id
-
         WHERE br.status=%s
-
         ORDER BY br.approved_at DESC
-
         LIMIT %s
         """,
         (
@@ -2461,17 +2450,12 @@ def pengasuhan_users_update(user_id):
 def koordinator_dashboard():
 
     stats = koordinator_statistics()
-
     latest = latest_active()
 
     return render_template(
-
         "koordinator/dashboard.html",
-
         stats=stats,
-
         latest=latest
-
     )
 
 @app.route("/koordinator/requests")
@@ -2487,29 +2471,24 @@ def koordinator_requests():
     ):
         status = None
 
-    requests = """
+    requests = query("""
         SELECT
             br.id,
             u.name,
             br.reason,
-            br.borrow_date,
-            br.start_time,
-            br.end_time,
+            br.start_datetime,
+            br.end_datetime,
             br.status,
             br.approved_at,
             br.created_at
         FROM borrow_requests br
-
         JOIN users u
             ON u.id = br.user_id
-    """
-
+    """)
     return render_template(
-
         "koordinator/requests.html",
         requests=requests,
         current_status=status
-
     )
 
 @app.route("/koordinator/requests/<int:request_id>")
@@ -2541,27 +2520,30 @@ def koordinator_request_detail(request_id):
 def finish_request(request_id):
     print(request.form)
     data = get_request_by_id(request_id)
-    finished_at = request.form.get("finished_at")
     if not data:
-        flash(
-            "Data tidak ditemukan.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("koordinator_requests")
-        )
+        flash("Data tidak ditemukan.", "danger")
+        return redirect(url_for("koordinator_requests"))
 
     if data["status"] != STATUS_APPROVED:
-        flash(
-            "Status peminjaman sudah berubah.",
-            "warning"
-        )
+        flash("Status peminjaman sudah berubah.", "warning")
+        return redirect(url_for("koordinator_requests"))
 
-        return redirect(
-            url_for("koordinator_requests")
-        )
+    # 1. Parsing finished_at dari form (dengan fallback ke waktu sekarang jika kosong/invalid)
+    finished_at_raw = request.form.get("finished_at")
+    if finished_at_raw:
+        try:
+            finished_dt = datetime.strptime(finished_at_raw, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            try:
+                finished_dt = datetime.strptime(finished_at_raw, "%Y-%m-%d %H:%M")
+            except ValueError:
+                finished_dt = datetime.now()
+    else:
+        finished_dt = datetime.now()
 
+    finished_at_str = finished_dt.strftime("%Y-%m-%d %H:%M:%S")
+
+    # 2. Update status pengembalian
     execute(
         """
         UPDATE borrow_requests
@@ -2575,47 +2557,48 @@ def finish_request(request_id):
         (
             STATUS_FINISHED,
             session["user_id"],
-            finished_at,
+            finished_at_str,
             request_id
         )
     )
 
-    borrow_end = datetime.strptime(
-        f"{data['borrow_date']} {data['end_time']}",
-        "%Y-%m-%d %H:%M:%S"
-    )
+    # 3. Parsing end_datetime dari database
+    borrow_end = data.get("end_datetime")
+    if isinstance(borrow_end, str):
+        try:
+            borrow_end = datetime.strptime(borrow_end, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            borrow_end = datetime.strptime(borrow_end, "%Y-%m-%d %H:%M")
 
-    finished = datetime.strptime(finished_at,"%Y-%m-%d %H:%M:%S")
-    late_minutes = int((finished - borrow_end).total_seconds() // 60)
-    if late_minutes > 0:
-        execute(
-            """
-            INSERT INTO late_recaps
-            (
-                user_id,
-                date,
-                late_minutes
+    # 4. Hitung menit keterlambatan jika borrow_end tersedia
+    if borrow_end:
+        late_seconds = (finished_dt - borrow_end).total_seconds()
+        late_minutes = int(late_seconds // 60)
+
+        if late_minutes > 0:
+            recap_date = finished_dt.strftime("%Y-%m-%d")
+            execute(
+                """
+                INSERT INTO late_recaps
+                (
+                    user_id,
+                    date,
+                    late_minutes
+                )
+                VALUES
+                (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    late_minutes = late_minutes + VALUES(late_minutes)
+                """,
+                (
+                    data["user_id"],
+                    recap_date,
+                    late_minutes
+                )
             )
-            VALUES
-            (%s,%s,%s)
-            ON DUPLICATE KEY UPDATE
-                late_minutes = late_minutes + VALUES(late_minutes)
-            """,
-            (
-                data["user_id"],
-                data["borrow_date"],
-                late_minutes
-            )
-        )
 
-    flash(
-        "Pengembalian berhasil dikonfirmasi.",
-        "success"
-    )
-
-    return redirect(
-        url_for("koordinator_requests")
-    )
+    flash("Pengembalian berhasil dikonfirmasi.", "success")
+    return redirect(url_for("koordinator_requests"))
 
 @app.get("/borrow-files/view/<path:file_path>")
 @login_required
