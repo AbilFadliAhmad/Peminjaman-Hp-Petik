@@ -425,64 +425,71 @@ def pengasuhan_statistics():
 
     stats = {}
 
-    now = datetime.now()
+    # 1. Total Pengajuan Hari Ini
+    today_result = query(
+        """
+        SELECT COUNT(*) AS total
+        FROM borrow_requests
+        WHERE DATE(start_datetime) = CURDATE()
+        """,
+        one=True
+    )
+    stats["today"] = today_result["total"] if today_result else 0
 
-    # 1. Ambil semua data pengajuan hari ini
-    today_requests = query(
+    # 1. Ambil semua data peminjaman yang saat ini sedang aktif (APPROVED)
+    active_requests = query(
         """
         SELECT 
             br.id, 
             br.start_datetime, 
             br.end_datetime, 
-            br.status,
             u.name 
         FROM borrow_requests br
         JOIN users u ON br.user_id = u.id
-        WHERE DATE(br.start_datetime) = CURDATE()
+        WHERE br.status = 'APPROVED'
         """
-    ) or []
+    )
 
-    # 2. Total pengajuan hari ini diambil dari jumlah data (length)
-    stats["today"] = len(today_requests)
-
+    now = datetime.now()
     late_handphones = []
 
-    # 3. Filter mahasantri yang telat hanya dari data hari ini
-    for req in today_requests:
-        # Hanya cek peminjaman yang disetujui (APPROVED)
-        if req.get("status") == "APPROVED" and req.get("end_datetime"):
-            end_dt = req["end_datetime"]
+    # 2. Filter via Python (Aplikasi)
+    for req in active_requests:
+        end_dt = req["end_datetime"]
 
-            # Handle konversi string ke datetime
-            if isinstance(end_dt, str):
-                try:
-                    end_dt = datetime.strptime(end_dt[:19], "%Y-%m-%d %H:%M:%S")
-                except ValueError:
-                    end_dt = datetime.strptime(end_dt[:16], "%Y-%m-%d %H:%M")
+        # Handle konversi string ke datetime jika driver MySQL mengembalikan string
+        if isinstance(end_dt, str):
+            try:
+                end_dt = datetime.strptime(end_dt[:19], "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                end_dt = datetime.strptime(end_dt[:16], "%Y-%m-%d %H:%M")
 
-            # Cek jika batas waktu pengembalian sudah lewat
-            if end_dt < now:
-                diff_seconds = (now - end_dt).total_seconds()
-                total_minutes = int(diff_seconds // 60)
+        # Jika batas waktu pengembalian sudah terlewati oleh waktu sekarang
+        if end_dt < now:
+            diff_seconds = (now - end_dt).total_seconds()
+            total_minutes = int(diff_seconds // 60)
 
-                days = total_minutes // 1440
-                hours = (total_minutes % 1440) // 60
-                mins = total_minutes % 60
+            # Konversi ke Hari, Jam, Menit
+            days = total_minutes // 1440
+            hours = (total_minutes % 1440) // 60
+            mins = total_minutes % 60
 
-                if days > 0:
-                    late_str = f"{days} Hari {hours} Jam"
-                elif hours > 0:
-                    late_str = f"{hours} Jam {mins} Menit"
-                else:
-                    late_str = f"{mins} Menit"
+            if days > 0:
+                late_str = f"{days} Hari {hours} Jam"
+            elif hours > 0:
+                late_str = f"{hours} Jam {mins} Menit"
+            else:
+                late_str = f"{mins} Menit"
 
-                req["late_minutes"] = total_minutes
-                req["late_str"] = late_str
-                late_handphones.append(req)
+            # Simpan hasil kalkulasi ke dalam dictionary
+            req["late_minutes"] = total_minutes
+            req["late_str"] = late_str
+            late_handphones.append(req)
 
-    # 4. Urutkan dari yang terlambat paling lama (terbesar ke terkecil)
+    # 3. Urutkan dari yang telatnya paling lama (terbesar ke terkecil)
     late_handphones.sort(key=lambda x: x["late_minutes"], reverse=True)
 
+    # Masukkan ke dalam dict stats
     stats["late_handphones"] = late_handphones
 
     # 2. Ringkasan Status Hari Ini (IFNULL Mencegah Nilai None)
