@@ -506,6 +506,7 @@ def pengasuhan_statistics():
         one=True
     )
 
+    print('testing', summary_result)
     stats["today_summary"] = summary_result or {
         "pending": 0,
         "approved": 0,
@@ -1704,6 +1705,7 @@ def santri_izin_keluar_hapus(id):
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_dashboard():
     stats = pengasuhan_statistics()
+    print(stats, 'stats test')
     latest = latest_requests()
 
     return render_template(
@@ -2546,6 +2548,7 @@ def koordinator_requests():
         FROM borrow_requests br
         JOIN users u
             ON u.id = br.user_id
+        ORDER BY br.id DESC
     """)
     return render_template(
         "koordinator/requests.html",
@@ -2557,9 +2560,7 @@ def koordinator_requests():
 @login_required
 @role_required(ROLE_KOORDINATOR)
 def koordinator_request_detail(request_id):
-
     data = get_request_by_id(request_id)
-
     if not data:
 
         flash(

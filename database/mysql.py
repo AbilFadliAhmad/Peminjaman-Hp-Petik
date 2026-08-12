@@ -84,9 +84,8 @@ def initialize_database():
             friend_user_id INT NULL,
             reason TEXT NOT NULL,
             files JSON NULL,
-            borrow_date DATE NOT NULL,
-            start_time TIME NOT NULL,
-            end_time TIME NOT NULL,
+            start_datetime DATETIME NULL,
+            end_datetime DATETIME NULL,
             status ENUM(
                 'PENDING',
                 'APPROVED',
@@ -111,7 +110,6 @@ def initialize_database():
             FOREIGN KEY(friend_user_id) REFERENCES users(id),
             
             INDEX idx_friend_loading (friend_user_id, status)
-
         )
     """)
 
