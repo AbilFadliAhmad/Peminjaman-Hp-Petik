@@ -1,0 +1,367 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Jadwal Istirahat
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+        <div>
+            <h1 class="text-2xl font-bold sm:text-3xl">
+                Jadwal Istirahat
+            </h1>
+
+            <p class="mt-1 text-gray-500">
+                Atur jam istirahat versi Pengasuhan. Santri tidak akan bisa mengajukan peminjaman HP jika jam mulai atau jam selesai bersinggungan dengan jadwal ini.
+            </p>
+        </div>
+
+        <button
+            id="openCreateModal"
+            type="button"
+            class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700">
+
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="h-5 w-5"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor">
+
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"/>
+
+            </svg>
+
+            Tambah Jadwal
+
+        </button>
+
+    </div>
+
+    <div class="rounded-3xl border border-blue-200 bg-blue-50 p-6">
+        <div class="flex items-start gap-4">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">⏸️</div>
+            <div>
+                <h2 class="font-semibold text-blue-900">Cara Kerja Validasi</h2>
+                <ul class="mt-3 space-y-2 text-sm text-blue-800">
+                    <li>• Jadwal yang berstatus <strong>Aktif</strong> akan otomatis dipakai untuk memvalidasi form peminjaman HP santri.</li>
+                    <li>• Pengajuan akan ditolak jika <strong>jam mulai</strong> ATAU <strong>jam selesai</strong> peminjaman berada di dalam rentang jadwal istirahat.</li>
+                    <li>• Jadwal istirahat dari sisi Koordinator juga akan digabungkan dalam validasi yang sama.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-lg overflow-hidden">
+        <div class="border-b bg-gradient-to-r from-slate-50 to-white px-4 py-5 sm:px-6 sm:py-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Daftar Jadwal Istirahat</h2>
+                    <p class="text-sm text-slate-500 mt-1">Jadwal istirahat yang dikelola oleh Pengasuhan.</p>
+                </div>
+
+                <button type="button" onclick="window.location.reload()" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-300 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v6h6M20 20v-6h-6M20 9A8 8 0 005.3 6M4 15a8 8 0 0014.7 3" />
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:px-6 sm:py-5">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+                <div class="xl:col-span-6">
+                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Pencarian </label>
+
+                    <div class="relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z" />
+                        </svg>
+
+                        <input
+                            id="searchRequest"
+                            type="text"
+                            placeholder="Cari judul jadwal..."
+                            class="w-full rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-4 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        />
+                    </div>
+                </div>
+
+                <div class="xl:col-span-3">
+                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Status </label>
+
+                    <select id="statusFilter" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                        <option value="">Semua Status</option>
+                        <option value="AKTIF">Aktif</option>
+                        <option value="NONAKTIF">Nonaktif</option>
+                    </select>
+                </div>
+
+                <div class="xl:col-span-3">
+                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Tampilkan </label>
+
+                    <select id="pageLength" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1">
+            <div class="w-full overflow-x-auto bg">
+                <table id="requestsTable" class="min-w-[900px] w-full">
+                    <thead>
+                        <tr class="border-b border-slate-200 bg-slate-50">
+                            <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">No</th>
+                            <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Judul</th>
+                            <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Jam Mulai</th>
+                            <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Jam Selesai</th>
+                            <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+                            <th class="px-4 py-3 sm:px-6 sm:py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Aksi</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-slate-100">
+                        {% if schedules %}
+                        {% for item in schedules %}
+                        <tr class="transition hover:bg-slate-50">
+                            <td class="px-4 py-3 sm:px-6 sm:py-4">
+                                {{ loop.index }}
+                            </td>
+
+                            <td class="px-4 py-3 sm:px-6 sm:py-4">
+                                <div class="text-sm font-semibold text-slate-800 sm:text-base">
+                                    {{ item.title }}
+                                </div>
+                            </td>
+
+                            <td class="whitespace-nowrap px-4 py-3 font-mono text-sm text-slate-700 sm:px-6 sm:py-4">
+                                {{ item.start_time|format_time }}
+                            </td>
+
+                            <td class="whitespace-nowrap px-4 py-3 font-mono text-sm text-slate-700 sm:px-6 sm:py-4">
+                                {{ item.end_time|format_time }}
+                            </td>
+
+                            <td class="px-4 py-3 sm:px-6 sm:py-4">
+                                {% if item.is_active %}
+                                <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                    Aktif
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                                    Nonaktif
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-4 py-3 sm:px-6 sm:py-4">
+                                <div class="flex justify-center gap-2">
+                                    <button
+                                        type="button"
+                                        class="edit-schedule-btn inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+                                        data-id="{{ item.id }}"
+                                        data-title="{{ item.title }}"
+                                        data-start-time="{{ item.start_time|format_time }}"
+                                        data-end-time="{{ item.end_time|format_time }}"
+                                        data-active="{{ '1' if item.is_active else '0' }}">
+                                        Edit
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="delete-schedule-btn inline-flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                                        data-id="{{ item.id }}">
+                                        Hapus
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="py-16 text-center text-slate-500">
+                                Belum ada jadwal istirahat.
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="pagination" class="flex flex-col gap-4 border-t border-slate-200 bg-white px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
+            <p id="paginationInfo" class="text-sm text-slate-500 text-center"></p>
+            <div id="paginationButtons" class="flex flex-wrap justify-center gap-2 overflow-x-auto pb-1 md:justify-end"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Jadwal Istirahat -->
+<div id="scheduleModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+
+        <div class="flex items-center justify-between border-b px-6 py-4">
+            <h2 id="modalTitle" class="text-lg font-semibold text-slate-800">Tambah Jadwal Istirahat</h2>
+            <button id="closeModal" type="button" class="text-slate-400 transition hover:text-slate-700">✕</button>
+        </div>
+
+        <form id="scheduleForm" method="POST" action="{{ url_for('pengasuhan_rest_schedule_create') }}">
+
+            <input type="hidden" id="scheduleId" name="schedule_id">
+
+            <div class="space-y-5 p-6">
+
+                <div>
+                    <label class="mb-2 block text-sm font-medium">Judul Jadwal</label>
+                    <input
+                        id="title"
+                        name="title"
+                        required
+                        placeholder="Contoh: Istirahat Siang"
+                        class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="mb-2 block text-sm font-medium">Jam Mulai</label>
+                        <input
+                            id="start_time"
+                            name="start_time"
+                            required
+                            placeholder="Pilih jam mulai"
+                            class="modern-input w-full">
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block text-sm font-medium">Jam Selesai</label>
+                        <input
+                            id="end_time"
+                            name="end_time"
+                            required
+                            placeholder="Pilih jam selesai"
+                            class="modern-input w-full">
+                    </div>
+                </div>
+
+                <div id="activeWrapper" class="hidden items-center gap-3">
+                    <input type="checkbox" id="is_active" name="is_active" class="h-4 w-4 rounded border-slate-300 text-blue-600">
+                    <label for="is_active" class="text-sm font-medium text-slate-700">Jadwal Aktif</label>
+                </div>
+
+            </div>
+
+            <div class="flex justify-end gap-3 border-t bg-slate-50 px-6 py-4">
+                <button type="button" id="cancelModal" class="rounded-xl border border-slate-300 px-5 py-2.5">Batal</button>
+                <button id="submitButton" class="rounded-xl bg-blue-600 px-5 py-2.5 text-white">Simpan</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Form Tersembunyi Untuk Hapus -->
+<form id="deleteForm" method="POST" class="hidden"></form>
+
+{% endblock %}
+
+{% block script %}
+<script type="module">
+    import restScheduleTable from "{{ url_for('static', filename='js/rest-schedule-table.js') }}";
+    restScheduleTable();
+
+    flatpickr("#start_time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true
+    });
+
+    flatpickr("#end_time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true
+    });
+
+    const modal = document.getElementById("scheduleModal");
+    const form = document.getElementById("scheduleForm");
+    const title = document.getElementById("modalTitle");
+    const submit = document.getElementById("submitButton");
+    const activeWrapper = document.getElementById("activeWrapper");
+    const isActive = document.getElementById("is_active");
+
+    function openModal() {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+
+    function closeModal() {
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+    }
+
+    document.getElementById("closeModal").onclick = closeModal;
+    document.getElementById("cancelModal").onclick = closeModal;
+
+    document.getElementById("openCreateModal").onclick = () => {
+        title.textContent = "Tambah Jadwal Istirahat";
+        submit.textContent = "Simpan";
+        form.action = "{{ url_for('pengasuhan_rest_schedule_create') }}";
+        form.reset();
+        activeWrapper.classList.add("hidden");
+        activeWrapper.classList.remove("flex");
+        openModal();
+    };
+
+    document.querySelectorAll(".edit-schedule-btn").forEach(button => {
+        button.onclick = () => {
+            title.textContent = "Edit Jadwal Istirahat";
+            submit.textContent = "Perbarui";
+            form.action = "/pengasuhan/jadwal-istirahat/update/" + button.dataset.id;
+
+            document.getElementById("title").value = button.dataset.title;
+            document.getElementById("start_time")._flatpickr.setDate(button.dataset.startTime, true);
+            document.getElementById("end_time")._flatpickr.setDate(button.dataset.endTime, true);
+
+            isActive.checked = button.dataset.active === "1";
+            activeWrapper.classList.remove("hidden");
+            activeWrapper.classList.add("flex");
+
+            openModal();
+        };
+    });
+
+    const deleteForm = document.getElementById("deleteForm");
+
+    document.querySelectorAll(".delete-schedule-btn").forEach(button => {
+        button.onclick = async () => {
+            const result = await Swal.fire({
+                icon: "warning",
+                title: "Hapus Jadwal Istirahat?",
+                text: "Jadwal yang dihapus tidak dapat dikembalikan.",
+                showCancelButton: true,
+                confirmButtonText: "Ya, Hapus",
+                cancelButtonText: "Batal",
+                reverseButtons: true,
+                confirmButtonColor: "#dc2626",
+                cancelButtonColor: "#64748b",
+            });
+
+            if (!result.isConfirmed) return;
+
+            deleteForm.action = "/pengasuhan/jadwal-istirahat/delete/" + button.dataset.id;
+            deleteForm.submit();
+        };
+    });
+</script>
+{% endblock %}

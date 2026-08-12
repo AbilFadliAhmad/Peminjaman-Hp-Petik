@@ -125,6 +125,48 @@ def initialize_database():
         )
     """)
 
+    # ============================
+    # JADWAL ISTIRAHAT (KOORDINATOR)
+    # ============================
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS koordinator_rest_schedules(
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(100) NOT NULL,
+            start_time TIME NOT NULL,
+            end_time TIME NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_by INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
+                DEFAULT CURRENT_TIMESTAMP
+                ON UPDATE CURRENT_TIMESTAMP,
+
+            FOREIGN KEY(created_by) REFERENCES users(id)
+        )
+    """)
+
+    # ============================
+    # JADWAL ISTIRAHAT (PENGASUHAN)
+    # ============================
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS pengasuhan_rest_schedules(
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(100) NOT NULL,
+            start_time TIME NOT NULL,
+            end_time TIME NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_by INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
+                DEFAULT CURRENT_TIMESTAMP
+                ON UPDATE CURRENT_TIMESTAMP,
+
+            FOREIGN KEY(created_by) REFERENCES users(id)
+        )
+    """)
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS late_recaps(
             id INT AUTO_INCREMENT PRIMARY KEY,

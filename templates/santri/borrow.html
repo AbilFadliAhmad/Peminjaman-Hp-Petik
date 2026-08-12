@@ -382,6 +382,76 @@
   const timeWarning = document.getElementById("timeWarning");
   const timeWarningText = document.getElementById("timeWarningText");
 
+  // ============================
+  // Jadwal Istirahat (Koordinator & Pengasuhan)
+  // ============================
+
+  // Menampung jadwal istirahat aktif yang diambil dari server.
+  // Format tiap item: { title, start_time: "HH:MM", end_time: "HH:MM" }
+  let restSchedules = [];
+
+  function timeToMinutes(value) {
+    const [hour, minute] = value.split(":").map(Number);
+    return (hour * 60) + minute;
+  }
+
+  // Mengecek apakah sebuah jam ("HH:MM") berada di dalam
+  // rentang jadwal istirahat tertentu. Mendukung rentang yang
+  // melewati tengah malam (misal 22:00 - 04:00).
+  function isTimeWithinSchedule(timeValue, schedule) {
+    const target = timeToMinutes(timeValue);
+    const start = timeToMinutes(schedule.start_time);
+    const end = timeToMinutes(schedule.end_time);
+
+    if (start === end) return false;
+
+    if (start < end) {
+      return target >= start && target < end;
+    }
+
+    // Rentang melewati tengah malam
+    return target >= start || target < end;
+  }
+
+  // Mencari seluruh jadwal istirahat yang bersinggungan dengan
+  // jam mulai atau jam selesai yang dipilih santri.
+  function findConflictingSchedules(sTime, eTime) {
+    const conflicts = [];
+
+    restSchedules.forEach((schedule) => {
+
+      const hitsStart = sTime && isTimeWithinSchedule(sTime, schedule);
+      const hitsEnd = eTime && isTimeWithinSchedule(eTime, schedule);
+
+      if (hitsStart || hitsEnd) {
+        conflicts.push({
+          schedule,
+          hitsStart,
+          hitsEnd,
+        });
+      }
+
+    });
+
+    return conflicts;
+  }
+
+  async function loadRestSchedules() {
+    try {
+      const response = await fetch("{{ url_for('api_rest_schedules') }}");
+
+      if (!response.ok) return;
+
+      restSchedules = await response.json();
+
+      // Setelah data jadwal istirahat siap, jalankan ulang validasi
+      // supaya form yang sudah terisi (mis. saat edit) ikut tervalidasi.
+      validateForm();
+    } catch (error) {
+      console.error("Gagal memuat jadwal istirahat:", error);
+    }
+  }
+
   // Cek Apakah Waktu Terlalu Mepet (< 1 Jam)
   function checkBorrowTime() {
     const startDateVal = document.getElementById("start_date").value;
@@ -438,6 +508,21 @@
     if (endObj <= startObj) {
       errors.push("Waktu pengembalian (selesai) harus lebih lambat dari waktu mulai peminjaman.");
     }
+
+    // Validasi Jadwal Istirahat (Koordinator & Pengasuhan)
+    const conflicts = findConflictingSchedules(sTime, eTime);
+
+    conflicts.forEach(({ schedule, hitsStart, hitsEnd }) => {
+
+      const parts = [];
+      if (hitsStart) parts.push("jam mulai");
+      if (hitsEnd) parts.push("jam selesai");
+
+      errors.push(
+        `Peminjaman tidak dapat diajukan karena ${parts.join(" dan ")} bertabrakan dengan jadwal istirahat <strong>${schedule.title}</strong> (${schedule.start_time} - ${schedule.end_time}).`
+      );
+
+    });
 
     if (errors.length > 0) {
       validationList.innerHTML = errors.map((e) => `<li>${e}</li>`).join("");
@@ -682,5 +767,6 @@
   // Panggil fungsi saat halaman dimuat untuk memeriksa waktu peminjaman
   validateForm();
   checkBorrowTime();
+  loadRestSchedules();
 </script>
 {% endblock %} {% block script %} {% endblock %}
