@@ -7,7 +7,7 @@ from flask import (
     session,
     flash,
     jsonify,
-    send_from_directory
+send_from_directory
 )
 import json
 import os
@@ -20,6 +20,8 @@ from werkzeug.utils import secure_filename
 import uuid
 from datetime import datetime, timedelta
 from markupsafe import Markup
+
+
 
 app = Flask(__name__)
 
@@ -103,6 +105,12 @@ SIDEBAR_MENUS = {
             "title": "Jadwal Istirahat",
             "endpoint": "pengasuhan_rest_schedule",
             "icon": "⏸️"
+        },
+
+        {
+            "title": "Mahasantri Telat",
+            "endpoint": "pengasuhan_late_students",
+            "icon": "⏰"
         }
     ],
 
@@ -129,12 +137,12 @@ SIDEBAR_MENUS = {
     ]
 }
 
-
 # ==========================================================
 # User Helper
 # ==========================================================
 
 def get_all_santri():
+
     return query(
         """
         SELECT *
@@ -146,8 +154,8 @@ def get_all_santri():
         fetchall=True
     )
 
-
 def save_borrow_files(files):
+
     """
     Menyimpan seluruh file pendukung pengajuan.
 
@@ -203,12 +211,12 @@ def save_borrow_files(files):
 
     return uploaded
 
-
 # ==========================================================
 # Rest Schedule Helper (Jadwal Istirahat)
 # ==========================================================
 
 def time_to_hhmm(value):
+
     """
     Mengubah nilai kolom TIME (bisa berupa datetime.time
     ataupun datetime.timedelta tergantung driver database)
@@ -229,6 +237,7 @@ def time_to_hhmm(value):
 
 
 def get_koordinator_rest_schedules():
+
     return query("""
         SELECT *
         FROM koordinator_rest_schedules
@@ -237,6 +246,7 @@ def get_koordinator_rest_schedules():
 
 
 def get_pengasuhan_rest_schedules():
+
     return query("""
         SELECT *
         FROM pengasuhan_rest_schedules
@@ -245,6 +255,7 @@ def get_pengasuhan_rest_schedules():
 
 
 def get_koordinator_rest_schedule_by_id(schedule_id):
+
     return query(
         """
         SELECT *
@@ -257,6 +268,7 @@ def get_koordinator_rest_schedule_by_id(schedule_id):
 
 
 def get_pengasuhan_rest_schedule_by_id(schedule_id):
+
     return query(
         """
         SELECT *
@@ -269,6 +281,7 @@ def get_pengasuhan_rest_schedule_by_id(schedule_id):
 
 
 def get_active_rest_schedules():
+
     """
     Mengambil seluruh jadwal istirahat yang masih aktif,
     baik dari sisi Koordinator maupun Pengasuhan.
@@ -305,6 +318,7 @@ def get_active_rest_schedules():
 # ==========================================================
 
 def has_active_borrow(user_id):
+
     data = query(
         """
         SELECT COUNT(*) total
@@ -322,8 +336,8 @@ def has_active_borrow(user_id):
 
     return data["total"] > 0
 
-
 def latest_borrow(user_id):
+
     return query(
         """
         SELECT *
@@ -336,8 +350,8 @@ def latest_borrow(user_id):
         one=True
     )
 
-
 def latest_history(user_id, limit=5):
+
     return query(
         """
         SELECT
@@ -356,8 +370,8 @@ def latest_history(user_id, limit=5):
         (user_id, limit)
     )
 
-
 def get_pending_requests():
+
     return query(
         """
         SELECT
@@ -378,8 +392,8 @@ def get_pending_requests():
         (STATUS_PENDING,)
     )
 
-
 def reject_borrow(request_id, rejected_by, reason):
+
     execute(
         """
         UPDATE borrow_requests
@@ -398,8 +412,8 @@ def reject_borrow(request_id, rejected_by, reason):
         )
     )
 
-
 def get_request_by_id(request_id):
+
     data = query(
         """
         SELECT
@@ -422,7 +436,7 @@ def get_request_by_id(request_id):
 
         LEFT JOIN users finisher
             ON finisher.id = br.finished_by
-
+            
         LEFT JOIN users friend
             ON friend.id = br.friend_user_id
 
@@ -449,7 +463,6 @@ def get_request_by_id(request_id):
     data["files"] = raw_files
     return data
 
-
 def latest_requests(limit=5):
     return query(
         """
@@ -469,12 +482,12 @@ def latest_requests(limit=5):
         (limit,)
     )
 
-
 # ==========================================================
 # Statistic Helper
 # ==========================================================
 
 def total_santri():
+
     result = query(
         """
         SELECT COUNT(*) total
@@ -487,8 +500,8 @@ def total_santri():
 
     return result["total"]
 
-
 def total_pending():
+
     result = query(
         """
         SELECT COUNT(*) total
@@ -501,8 +514,8 @@ def total_pending():
 
     return result["total"]
 
-
 def total_active():
+
     result = query(
         """
         SELECT COUNT(*) total
@@ -515,8 +528,8 @@ def total_active():
 
     return result["total"]
 
-
 def total_finished_today():
+
     result = query(
         """
         SELECT COUNT(*) total
@@ -529,8 +542,211 @@ def total_finished_today():
 
     return result["total"]
 
+# ==========================================================
+# Late Recap Helper (Keterlambatan Mahasantri)
+# ==========================================================
+
+def parse_datetime_value(value):
+
+    """
+    Mengubah nilai DATETIME (bisa berupa objek datetime
+    ataupun string tergantung driver database) menjadi
+    objek datetime Python.
+    """
+
+    if value is None:
+        return None
+
+    if isinstance(value, datetime):
+        return value
+
+    if isinstance(value, str):
+        try:
+            return datetime.strptime(value[:19], "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            try:
+                return datetime.strptime(value[:16], "%Y-%m-%d %H:%M")
+            except ValueError:
+                return None
+
+    return None
+
+
+def format_dt_time(value):
+
+    dt = parse_datetime_value(value)
+
+    return dt.strftime("%H:%M") if dt else "-"
+
+
+def format_dt_date(value):
+
+    dt = parse_datetime_value(value)
+
+    return dt.strftime("%d-%m-%Y") if dt else "-"
+
+
+def get_late_recaps_list():
+
+    """
+    Mengambil seluruh riwayat keterlambatan (per hari) dari
+    tabel late_recaps, digabung dengan nama mahasantri.
+    Digunakan pada menu "Mahasantri Telat" sisi Pengasuhan.
+    """
+
+    return query("""
+        SELECT
+            l.id,
+            l.user_id,
+            u.name,
+            l.date,
+            l.late_minutes
+        FROM late_recaps l
+        JOIN users u ON l.user_id = u.id
+        ORDER BY l.date DESC, l.late_minutes DESC
+    """)
+
+
+def get_late_recap_by_id(recap_id):
+
+    return query(
+        """
+        SELECT
+            l.id,
+            l.user_id,
+            u.name,
+            l.date,
+            l.late_minutes
+        FROM late_recaps l
+        JOIN users u ON l.user_id = u.id
+        WHERE l.id=%s
+        """,
+        (recap_id,),
+        one=True
+    )
+
+
+def get_late_borrow_events(user_id, date):
+
+    """
+    Mencari kejadian peminjaman yang benar-benar terlambat
+    dikembalikan pada tanggal tertentu untuk seorang mahasantri.
+    Digunakan untuk menampilkan alasan & jam seharusnya vs jam
+    aktual pengembalian pada dialog detail telat.
+    """
+
+    return query(
+        """
+        SELECT
+            id,
+            reason,
+            end_datetime,
+            finished_at
+        FROM borrow_requests
+        WHERE user_id=%s
+          AND status='FINISHED'
+          AND finished_at IS NOT NULL
+          AND end_datetime IS NOT NULL
+          AND DATE(finished_at)=%s
+          AND finished_at > end_datetime
+        ORDER BY finished_at DESC
+        """,
+        (user_id, date)
+    )
+
+
+def get_user_late_summary(user_id):
+
+    return query(
+        """
+        SELECT
+            COUNT(*) total_late,
+            COALESCE(SUM(late_minutes),0) total_minutes,
+            COALESCE(MAX(late_minutes),0) max_minutes,
+            COALESCE(AVG(late_minutes),0) avg_minutes
+        FROM late_recaps
+        WHERE user_id=%s
+        """,
+        (user_id,),
+        one=True
+    )
+
+
+def get_user_late_chart(user_id, range_type):
+
+    """
+    Data grafik "kelakuan telat" seorang mahasantri.
+
+    - today  : per kejadian keterlambatan hari ini (jam pengembalian)
+    - week   : per hari, dalam minggu berjalan (Senin - Minggu)
+    - month  : per hari, dalam bulan berjalan
+    """
+
+    if range_type == "today":
+
+        rows = query(
+            """
+            SELECT
+                finished_at,
+                TIMESTAMPDIFF(MINUTE, end_datetime, finished_at) AS late_minutes
+            FROM borrow_requests
+            WHERE user_id=%s
+              AND status='FINISHED'
+              AND finished_at IS NOT NULL
+              AND end_datetime IS NOT NULL
+              AND DATE(finished_at)=CURDATE()
+              AND finished_at > end_datetime
+            ORDER BY finished_at ASC
+            """,
+            (user_id,)
+        )
+
+        return [
+            {
+                "label": format_dt_time(row["finished_at"]),
+                "total": row["late_minutes"] or 0
+            }
+            for row in rows
+        ]
+
+    if range_type == "month":
+
+        rows = query(
+            """
+            SELECT date, late_minutes
+            FROM late_recaps
+            WHERE user_id=%s
+              AND date >= DATE_FORMAT(CURDATE(), '%%Y-%%m-01')
+              AND date <= LAST_DAY(CURDATE())
+            ORDER BY date ASC
+            """,
+            (user_id,)
+        )
+
+    else:
+
+        rows = query(
+            """
+            SELECT date, late_minutes
+            FROM late_recaps
+            WHERE user_id=%s
+              AND YEARWEEK(date, 1) = YEARWEEK(CURDATE(), 1)
+            ORDER BY date ASC
+            """,
+            (user_id,)
+        )
+
+    return [
+        {
+            "label": row["date"].strftime("%d %b") if hasattr(row["date"], "strftime") else str(row["date"]),
+            "total": row["late_minutes"] or 0
+        }
+        for row in rows
+    ]
+
 
 def pengasuhan_statistics():
+
     stats = {}
 
     # 1. Total Pengajuan Hari Ini
@@ -551,6 +767,7 @@ def pengasuhan_statistics():
             br.id, 
             br.start_datetime, 
             br.end_datetime, 
+            br.reason,
             u.name 
         FROM borrow_requests br
         JOIN users u ON br.user_id = u.id
@@ -592,6 +809,7 @@ def pengasuhan_statistics():
             # Simpan hasil kalkulasi ke dalam dictionary
             req["late_minutes"] = total_minutes
             req["late_str"] = late_str
+            req["should_return_time"] = format_dt_time(end_dt)
             late_handphones.append(req)
 
     # 3. Urutkan dari yang telatnya paling lama (terbesar ke terkecil)
@@ -645,12 +863,12 @@ def pengasuhan_statistics():
 
     return stats
 
-
 # ==========================================================
 # Koordinator Helper
 # ==========================================================
 
 def koordinator_statistics():
+
     stats = {}
 
     stats["active"] = query(
@@ -685,8 +903,8 @@ def koordinator_statistics():
     )["total"]
     return stats
 
-
 def latest_active(limit=5):
+
     return query(
         """
         SELECT
@@ -709,8 +927,8 @@ def latest_active(limit=5):
         )
     )
 
-
 def get_koordinator_requests(status=None):
+
     sql = """
         SELECT
             br.id,
@@ -750,12 +968,12 @@ def get_koordinator_requests(status=None):
         tuple(params)
     )
 
-
 # ==========================================================
 # Pengasuhan Helper
 # ==========================================================
 
 def get_all_users():
+
     return query("""
         SELECT
             id,
@@ -767,8 +985,8 @@ def get_all_users():
         ORDER BY created_at DESC
     """)
 
-
 def get_user_by_id(user_id):
+
     return query("""
         SELECT
             id,
@@ -781,13 +999,13 @@ def get_user_by_id(user_id):
         user_id,
     ), one=True)
 
-
 def create_user(
-        name,
-        username,
-        password,
-        role="santri"
+    name,
+    username,
+    password,
+    role="santri"
 ):
+
     return execute("""
         INSERT INTO users
         (
@@ -810,13 +1028,13 @@ def create_user(
         role
     ))
 
-
 def update_user(
-        user_id,
-        name,
-        username,
-        role
+    user_id,
+    name,
+    username,
+    role
 ):
+
     execute("""
         UPDATE users
         SET
@@ -831,11 +1049,11 @@ def update_user(
         user_id
     ))
 
-
 def update_password(
-        user_id,
-        password
+    user_id,
+    password
 ):
+
     execute("""
         UPDATE users
         SET
@@ -846,11 +1064,11 @@ def update_password(
         user_id
     ))
 
-
 def get_user_by_username(
-        username,
-        exclude_id=None
+    username,
+    exclude_id=None
 ):
+
     sql = """
         SELECT * FROM users
         WHERE username = %s
@@ -859,6 +1077,7 @@ def get_user_by_username(
     params = [username]
 
     if exclude_id is not None:
+
         sql += " AND id != %s"
 
         params.append(exclude_id)
@@ -868,7 +1087,6 @@ def get_user_by_username(
         tuple(params),
         one=True
     )
-
 
 # ==========================================================
 # Helper Function
@@ -889,7 +1107,6 @@ def query(sql, params=None, one=False):
     finally:
         connection.close()
 
-
 def execute(sql, params=None):
     connection = get_connection()
 
@@ -906,7 +1123,6 @@ def execute(sql, params=None):
     finally:
 
         connection.close()
-
 
 @app.template_filter("format_late")
 def format_late(minutes):
@@ -949,6 +1165,7 @@ def format_late(minutes):
 # ==========================================================
 
 def current_user():
+
     return {
         "id": session.get("user_id"),
         "name": session.get("name"),
@@ -956,13 +1173,13 @@ def current_user():
         "role": session.get("role")
     }
 
-
 # ==========================================================
 # Global Template Variable
 # ==========================================================
 
 @app.context_processor
 def inject_global():
+
     role = session.get("role")
 
     return {
@@ -973,13 +1190,13 @@ def inject_global():
 
     }
 
-
 # ==========================================================
 # Jinja Filters
 # ==========================================================
 
 @app.template_filter("status_badge")
 def status_badge(status):
+
     badges = {
         STATUS_PENDING:
             '<span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">Menunggu</span>',
@@ -1005,10 +1222,11 @@ def status_badge(status):
 
 @app.template_filter("format_date")
 def format_date(value):
+
     if not value:
         return "-"
 
-    if isinstance(value, datetime):
+    if hasattr(value, "strftime"):
         return value.strftime("%d-%m-%Y")
 
     return str(value)
@@ -1016,6 +1234,7 @@ def format_date(value):
 
 @app.template_filter("format_time")
 def format_time(value):
+
     if not value:
         return "-"
 
@@ -1023,9 +1242,9 @@ def format_time(value):
 
     return formatted if formatted else "-"
 
-
 @app.template_filter("status_class")
 def status_class(status):
+
     return {
         STATUS_PENDING: "text-yellow-600",
         STATUS_APPROVED: "text-blue-600",
@@ -1033,15 +1252,18 @@ def status_class(status):
         STATUS_FINISHED: "text-green-600",
     }.get(status, "text-gray-600")
 
-
 # ==========================================================
 # Login Required
 # ==========================================================
 
 def login_required(func):
+
     @wraps(func)
+
     def wrapper(*args, **kwargs):
+
         if "user_id" not in session:
+
             flash(
                 "Silakan login terlebih dahulu.",
                 "warning"
@@ -1059,12 +1281,15 @@ def login_required(func):
 # ==========================================================
 
 def role_required(role):
+
     def decorator(func):
 
         @wraps(func)
+
         def wrapper(*args, **kwargs):
 
             if "role" not in session:
+
                 flash(
                     "Silakan login.",
                     "warning"
@@ -1073,6 +1298,7 @@ def role_required(role):
                 return redirect(url_for("login"))
 
             if session["role"] != role:
+
                 flash(
                     "Anda tidak memiliki akses.",
                     "danger"
@@ -1092,6 +1318,7 @@ def role_required(role):
 # ==========================================================
 
 def dashboard_redirect():
+
     role = session.get("role")
 
     if role == ROLE_SANTRI:
@@ -1105,11 +1332,10 @@ def dashboard_redirect():
 
     return redirect(url_for("login"))
 
-
 @app.route("/")
 def index():
-    return redirect(url_for('login'))
 
+    return redirect(url_for('login'))
 
 # ==========================================================
 # Login
@@ -1148,7 +1374,6 @@ def login():
 
     return dashboard_redirect()
 
-
 # ==========================================================
 # Logout
 # ==========================================================
@@ -1156,6 +1381,7 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
+
     session.clear()
 
     flash(
@@ -1248,7 +1474,6 @@ def santri_izin_hp():
         friend_requests=friend_requests
     )
 
-
 @app.route("/santri/izin-hp-history")
 @login_required
 @role_required(ROLE_SANTRI)
@@ -1274,7 +1499,6 @@ def santri_history():
         "santri/history.html",
         history=history
     )
-
 
 @app.route("/santri/izin-keluar")
 @login_required
@@ -1326,7 +1550,6 @@ def santri_izin_keluar():
         permit=permit
     )
 
-
 @app.route("/santri/izin-keluar-history")
 @login_required
 @role_required(ROLE_SANTRI)
@@ -1338,10 +1561,10 @@ def santri_izin_keluar_history():
         history=history
     )
 
-
 @app.post("/change-password")
 @login_required
 def change_password():
+
     new_password = request.form.get(
         "new_password",
         ""
@@ -1353,6 +1576,7 @@ def change_password():
     ).strip()
 
     if not new_password or not confirm_password:
+
         flash(
             "Seluruh field wajib diisi.",
             "warning"
@@ -1361,6 +1585,7 @@ def change_password():
         return redirect(request.referrer)
 
     if new_password != confirm_password:
+
         flash(
             "Konfirmasi password tidak sama.",
             "danger"
@@ -1386,7 +1611,6 @@ def change_password():
     )
 
     return redirect(request.referrer)
-
 
 @app.post("/friend-request/<int:request_id>/<action>")
 @login_required
@@ -1429,6 +1653,7 @@ def friend_request_action(request_id, action):
             url_for("santri_izin_hp")
         )
 
+
     if action == "approve":
         status = STATUS_PENDING
         message = (
@@ -1461,7 +1686,6 @@ def friend_request_action(request_id, action):
     return redirect(
         url_for("santri_izin_hp")
     )
-
 
 @app.route("/santri/borrow", methods=["GET", "POST"])
 @login_required
@@ -1542,7 +1766,6 @@ def santri_borrow():
     ORDER BY name
     """, (session["user_id"],))
     return render_template("santri/borrow.html", users=users)
-
 
 @app.route("/santri/borrow/edit", methods=["GET", "POST"])
 @login_required
@@ -1651,11 +1874,11 @@ def santri_edit_borrow():
 
     return render_template("santri/borrow.html", borrow=borrow, users=users)
 
-
 @app.get("/santri/borrow/<int:request_id>/delete")
 @login_required
 @role_required(ROLE_SANTRI)
 def santri_delete_borrow(request_id):
+
     borrow = query(
         """
         SELECT id
@@ -1674,6 +1897,7 @@ def santri_delete_borrow(request_id):
     )
 
     if not borrow:
+
         flash(
             "Pengajuan tidak dapat dihapus.",
             "warning"
@@ -1706,7 +1930,6 @@ def santri_delete_borrow(request_id):
         url_for("santri_izin_hp")
     )
 
-
 @app.route("/santri/izin-keluar-pengajuan", methods=["GET", "POST"])
 @login_required
 @role_required(ROLE_SANTRI)
@@ -1733,6 +1956,7 @@ def santri_izin_keluar_pengajuan():
         return redirect(url_for("santri_izin_keluar"))
 
     if request.method == "GET":
+
         DISCLAIMER_TEXT = (
             "Segala bentuk penyelundupan barang terlarang ke wilayah pondok "
             "akan berimbas kepada kebijakan yang tidak menguntungkan santri."
@@ -1787,7 +2011,6 @@ def santri_izin_keluar_pengajuan():
     flash("Pengajuan izin keluar berhasil dikirim.", "success")
     return redirect(url_for("santri_izin_keluar"))
 
-
 @app.route("/izin-keluar/<int:id>/hapus")
 @login_required
 @role_required(ROLE_SANTRI)
@@ -1795,7 +2018,6 @@ def santri_izin_keluar_hapus(id):
     execute('DELETE FROM exit_permits WHERE id = %s', (id))
     flash("Pengajuan izin keluar berhasil dihapus.", "success")
     return redirect(url_for("santri_izin_keluar"))
-
 
 # ==========================================================
 # Dashboard Pengasuhan
@@ -1814,7 +2036,6 @@ def pengasuhan_dashboard():
         stats=stats,
         latest=latest
     )
-
 
 @app.route("/pengasuhan/approve/<int:request_id>", methods=["POST"])
 @login_required
@@ -1874,7 +2095,6 @@ def approve_request(request_id):
     flash("Pengajuan berhasil disetujui.", "success")
     return redirect(url_for("pengasuhan_requests"))
 
-
 @app.route(
     "/pengasuhan/reject/<int:request_id>",
     methods=["GET", "POST"]
@@ -1921,19 +2141,19 @@ def reject_request(request_id):
         url_for("pengasuhan_requests")
     )
 
-
 @app.route("/pengasuhan/requests")
 @login_required
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_requests():
+
     status = request.args.get("status")
 
     if status not in (
-            None,
-            STATUS_PENDING,
-            STATUS_APPROVED,
-            STATUS_REJECTED,
-            STATUS_FINISHED
+        None,
+        STATUS_PENDING,
+        STATUS_APPROVED,
+        STATUS_REJECTED,
+        STATUS_FINISHED
     ):
         status = None
 
@@ -1954,15 +2174,14 @@ def pengasuhan_requests():
                 JOIN users u
                     ON u.id = br.user_id
                 ORDER BY br.id DESC
-            """, ()
-    )
+            """,()
+        )
 
     return render_template(
         "pengasuhan/requests.html",
         requests=requests,
         current_status=status
     )
-
 
 @app.route("/pengasuhan/permits")
 @login_required
@@ -1971,11 +2190,11 @@ def pengasuhan_permits():
     status = request.args.get("status")
 
     if status not in (
-            None,
-            "PENDING",
-            "APPROVED",
-            "REJECTED",
-            "FINISHED"
+        None,
+        "PENDING",
+        "APPROVED",
+        "REJECTED",
+        "FINISHED"
     ):
         status = None
 
@@ -2022,7 +2241,6 @@ def pengasuhan_permits():
         settings=settings
     )
 
-
 @app.post("/pengasuhan/permit/update-settings")
 @login_required
 @role_required(ROLE_PENGASUHAN)
@@ -2058,7 +2276,6 @@ def pengasuhan_permit_update_settings():
     return redirect(
         url_for("pengasuhan_permits")
     )
-
 
 @app.route("/pengasuhan/permit/<int:permit_id>")
 @login_required
@@ -2115,16 +2332,16 @@ def pengasuhan_permit_detail(permit_id):
     late_minutes = None
 
     if (
-            data["returned_at"]
-            and
-            data["return_deadline"]
+        data["returned_at"]
+        and
+        data["return_deadline"]
     ):
 
         diff = int(
             (
-                    data["returned_at"]
-                    -
-                    data["return_deadline"]
+                data["returned_at"]
+                -
+                data["return_deadline"]
             ).total_seconds() // 60
         )
 
@@ -2137,7 +2354,6 @@ def pengasuhan_permit_detail(permit_id):
         suggested_deadline=suggested_deadline,
         late_minutes=late_minutes
     )
-
 
 @app.post("/pengasuhan/permit/approve")
 @login_required
@@ -2219,11 +2435,11 @@ def pengasuhan_permit_approve():
         url_for("pengasuhan_permits")
     )
 
-
 @app.post("/pengasuhan/permit/reject")
 @login_required
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_permit_reject():
+
     permit_id = request.form.get("permit_id")
 
     data = query(
@@ -2278,11 +2494,11 @@ def pengasuhan_permit_reject():
         url_for("pengasuhan_permits")
     )
 
-
 @app.post("/pengasuhan/permit/finish")
 @login_required
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_permit_finish():
+
     permit_id = request.form.get("permit_id")
     data = query(
         """
@@ -2328,7 +2544,6 @@ def pengasuhan_permit_finish():
     return redirect(
         url_for("pengasuhan_permits")
     )
-
 
 @app.route("/pengasuhan/requests/<int:request_id>")
 @login_required
@@ -2449,18 +2664,117 @@ def pengasuhan_request_detail(request_id):
 
     )
 
+# ==========================================================
+# Mahasantri Telat (Keterlambatan)
+# ==========================================================
+
+@app.route("/pengasuhan/mahasantri-telat")
+@login_required
+@role_required(ROLE_PENGASUHAN)
+def pengasuhan_late_students():
+
+    recaps = get_late_recaps_list()
+
+    return render_template(
+        "pengasuhan/late_students.html",
+        recaps=recaps
+    )
+
+
+@app.get("/pengasuhan/mahasantri-telat/<int:recap_id>/detail")
+@login_required
+@role_required(ROLE_PENGASUHAN)
+def pengasuhan_late_recap_detail(recap_id):
+
+    """
+    Endpoint JSON untuk mengisi dialog detail keterlambatan
+    pada halaman daftar Mahasantri Telat.
+    """
+
+    recap = get_late_recap_by_id(recap_id)
+
+    if not recap:
+        return jsonify({"error": "Data tidak ditemukan."}), 404
+
+    events = get_late_borrow_events(recap["user_id"], recap["date"])
+
+    data_events = [
+        {
+            "id": event["id"],
+            "reason": event["reason"],
+            "should_return": format_dt_time(event["end_datetime"]),
+            "returned_at": format_dt_time(event["finished_at"]),
+            "detail_url": url_for(
+                "pengasuhan_request_detail",
+                request_id=event["id"]
+            )
+        }
+        for event in events
+    ]
+
+    return jsonify({
+        "user_id": recap["user_id"],
+        "name": recap["name"],
+        "date": recap["date"].strftime("%d-%m-%Y") if hasattr(recap["date"], "strftime") else str(recap["date"]),
+        "late_minutes": recap["late_minutes"],
+        "events": data_events,
+        "detail_page_url": url_for(
+            "pengasuhan_late_student_detail",
+            user_id=recap["user_id"]
+        )
+    })
+
+
+@app.route("/pengasuhan/mahasantri-telat/user/<int:user_id>")
+@login_required
+@role_required(ROLE_PENGASUHAN)
+def pengasuhan_late_student_detail(user_id):
+
+    student = get_user_by_id(user_id)
+
+    if not student:
+        flash("Data mahasantri tidak ditemukan.", "danger")
+        return redirect(url_for("pengasuhan_late_students"))
+
+    range_type = request.args.get("range", "week")
+
+    if range_type not in ("today", "week", "month"):
+        range_type = "week"
+
+    summary = get_user_late_summary(user_id)
+    chart = get_user_late_chart(user_id, range_type)
+
+    recent_recaps = query(
+        """
+        SELECT id, date, late_minutes
+        FROM late_recaps
+        WHERE user_id=%s
+        ORDER BY date DESC
+        LIMIT 10
+        """,
+        (user_id,)
+    )
+
+    return render_template(
+        "pengasuhan/late_student_detail.html",
+        student=student,
+        summary=summary,
+        chart=chart,
+        range_type=range_type,
+        recent_recaps=recent_recaps
+    )
 
 @app.route("/pengasuhan/users")
 @login_required
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_users():
+
     users = get_all_users()
     return render_template(
         "pengasuhan/users.html",
         users=users,
         current_user_id=session["user_id"]
     )
-
 
 @app.post("/pengasuhan/users/create")
 @login_required
@@ -2507,14 +2821,15 @@ def pengasuhan_users_create():
         url_for("pengasuhan_users")
     )
 
-
 @app.post("/pengasuhan/users/update/<int:user_id>")
 @login_required
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_users_update(user_id):
+
     user = get_user_by_id(user_id)
 
     if not user:
+
         flash(
             "Data santri tidak ditemukan.",
             "danger"
@@ -2545,6 +2860,7 @@ def pengasuhan_users_update(user_id):
     )
 
     if not name:
+
         flash(
             "Nama wajib diisi.",
             "warning"
@@ -2555,6 +2871,7 @@ def pengasuhan_users_update(user_id):
         )
 
     if not username:
+
         flash(
             "Username wajib diisi.",
             "warning"
@@ -2565,6 +2882,7 @@ def pengasuhan_users_update(user_id):
         )
 
     if role not in ["santri", "koordinator"]:
+
         flash(
             "Role tidak valid.",
             "warning"
@@ -2577,6 +2895,7 @@ def pengasuhan_users_update(user_id):
     username_owner = get_user_by_username(username)
 
     if username_owner and username_owner["id"] != user_id:
+
         flash(
             "Username sudah digunakan.",
             "danger"
@@ -2594,6 +2913,7 @@ def pengasuhan_users_update(user_id):
     )
 
     if password:
+
         update_password(
             user_id,
             password
@@ -2608,7 +2928,6 @@ def pengasuhan_users_update(user_id):
         url_for("pengasuhan_users")
     )
 
-
 # ==========================================================
 # Jadwal Istirahat (Pengasuhan)
 # ==========================================================
@@ -2617,6 +2936,7 @@ def pengasuhan_users_update(user_id):
 @login_required
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_rest_schedule():
+
     schedules = get_pengasuhan_rest_schedules()
 
     return render_template(
@@ -2629,6 +2949,7 @@ def pengasuhan_rest_schedule():
 @login_required
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_rest_schedule_create():
+
     title = request.form.get("title", "").strip()
     start_time = request.form.get("start_time")
     end_time = request.form.get("end_time")
@@ -2668,6 +2989,7 @@ def pengasuhan_rest_schedule_create():
 @login_required
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_rest_schedule_update(schedule_id):
+
     schedule = get_pengasuhan_rest_schedule_by_id(schedule_id)
 
     if not schedule:
@@ -2714,6 +3036,7 @@ def pengasuhan_rest_schedule_update(schedule_id):
 @login_required
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_rest_schedule_delete(schedule_id):
+
     schedule = get_pengasuhan_rest_schedule_by_id(schedule_id)
 
     if not schedule:
@@ -2728,7 +3051,6 @@ def pengasuhan_rest_schedule_delete(schedule_id):
     flash("Jadwal istirahat berhasil dihapus.", "success")
     return redirect(url_for("pengasuhan_rest_schedule"))
 
-
 # ==========================================================
 # Dashboard Koordinator
 # ==========================================================
@@ -2737,6 +3059,7 @@ def pengasuhan_rest_schedule_delete(schedule_id):
 @login_required
 @role_required(ROLE_KOORDINATOR)
 def koordinator_dashboard():
+
     stats = koordinator_statistics()
     latest = latest_active()
 
@@ -2746,16 +3069,16 @@ def koordinator_dashboard():
         latest=latest
     )
 
-
 @app.route("/koordinator/requests")
 @login_required
 @role_required(ROLE_KOORDINATOR)
 def koordinator_requests():
+
     status = request.args.get("status")
     if status not in (
-            None,
-            STATUS_APPROVED,
-            STATUS_FINISHED
+        None,
+        STATUS_APPROVED,
+        STATUS_FINISHED
     ):
         status = None
 
@@ -2780,13 +3103,13 @@ def koordinator_requests():
         current_status=status
     )
 
-
 @app.route("/koordinator/requests/<int:request_id>")
 @login_required
 @role_required(ROLE_KOORDINATOR)
 def koordinator_request_detail(request_id):
     data = get_request_by_id(request_id)
     if not data:
+
         flash(
             "Data tidak ditemukan.",
             "danger"
@@ -2801,7 +3124,6 @@ def koordinator_request_detail(request_id):
         data=data
     )
 
-
 # ==========================================================
 # Jadwal Istirahat (Koordinator)
 # ==========================================================
@@ -2810,6 +3132,7 @@ def koordinator_request_detail(request_id):
 @login_required
 @role_required(ROLE_KOORDINATOR)
 def koordinator_rest_schedule():
+
     schedules = get_koordinator_rest_schedules()
 
     return render_template(
@@ -2822,6 +3145,7 @@ def koordinator_rest_schedule():
 @login_required
 @role_required(ROLE_KOORDINATOR)
 def koordinator_rest_schedule_create():
+
     title = request.form.get("title", "").strip()
     start_time = request.form.get("start_time")
     end_time = request.form.get("end_time")
@@ -2861,6 +3185,7 @@ def koordinator_rest_schedule_create():
 @login_required
 @role_required(ROLE_KOORDINATOR)
 def koordinator_rest_schedule_update(schedule_id):
+
     schedule = get_koordinator_rest_schedule_by_id(schedule_id)
 
     if not schedule:
@@ -2907,6 +3232,7 @@ def koordinator_rest_schedule_update(schedule_id):
 @login_required
 @role_required(ROLE_KOORDINATOR)
 def koordinator_rest_schedule_delete(schedule_id):
+
     schedule = get_koordinator_rest_schedule_by_id(schedule_id)
 
     if not schedule:
@@ -2921,7 +3247,6 @@ def koordinator_rest_schedule_delete(schedule_id):
     flash("Jadwal istirahat berhasil dihapus.", "success")
     return redirect(url_for("koordinator_rest_schedule"))
 
-
 # ==========================================================
 # API Jadwal Istirahat (Digunakan Validasi Form Peminjaman)
 # ==========================================================
@@ -2929,6 +3254,7 @@ def koordinator_rest_schedule_delete(schedule_id):
 @app.get("/api/jadwal-istirahat")
 @login_required
 def api_rest_schedules():
+
     """
     Mengembalikan seluruh jadwal istirahat yang masih aktif
     (gabungan Koordinator & Pengasuhan) dalam format JSON.
@@ -2938,7 +3264,6 @@ def api_rest_schedules():
     """
 
     return jsonify(get_active_rest_schedules())
-
 
 @app.route("/koordinator/finish/<int:request_id>", methods=["POST"])
 @login_required
@@ -3026,7 +3351,6 @@ def finish_request(request_id):
     flash("Pengembalian berhasil dikonfirmasi.", "success")
     return redirect(url_for("koordinator_requests"))
 
-
 @app.get("/borrow-files/view/<path:file_path>")
 @login_required
 def borrow_file_view(file_path):
@@ -3037,7 +3361,6 @@ def borrow_file_view(file_path):
         filename,
         as_attachment=False
     )
-
 
 @app.get("/borrow-files/download/<path:file_path>")
 @login_required
@@ -3050,13 +3373,13 @@ def borrow_file_download(file_path):
         as_attachment=True
     )
 
-
 # ==========================================================
 # Error Handler
 # ==========================================================
 
 @app.errorhandler(403)
 def forbidden(error):
+
     return render_template(
         "errors/403.html"
     ), 403
@@ -3064,6 +3387,7 @@ def forbidden(error):
 
 @app.errorhandler(404)
 def not_found(error):
+
     return render_template(
         "errors/404.html"
     ), 404
@@ -3071,10 +3395,10 @@ def not_found(error):
 
 @app.errorhandler(500)
 def server_error(error):
+
     return render_template(
         "errors/500.html"
     ), 500
-
 
 from datetime import datetime
 
@@ -3112,6 +3436,7 @@ def format_datetime(value):
 # ==========================================================
 
 if __name__ == "__main__":
+
     app.run(
         debug=True
     )

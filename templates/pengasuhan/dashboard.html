@@ -81,9 +81,13 @@
           Mahasantri berikut sedang meminjam HP dan telah melewati batas waktu pengembalian.
         </p>
       </div>
-      <div class="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
+      <button
+        type="button"
+        id="lateCountBadge"
+        title="Klik untuk melihat detail"
+        class="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700 transition hover:bg-red-200 cursor-pointer">
         {{ stats.late_handphones|length }} Santri
-      </div>
+      </button>
     </div>
 
     <div class="divide-y divide-slate-100">
@@ -135,6 +139,47 @@
 
 {% endblock %} {% block script %}
 <script>
+
+  const lateHandphones = {{ stats.late_handphones|tojson }};
+
+  const lateCountBadge = document.getElementById("lateCountBadge");
+
+  function renderLateHandphoneCard(item) {
+    return `
+      <div style="text-align:left" class="rounded-xl border border-slate-200 bg-slate-50 p-4 mb-3">
+        <div class="flex items-center justify-between">
+          <p class="font-semibold text-slate-800">${item.name}</p>
+          <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+            Telat ${item.late_str}
+          </span>
+        </div>
+        <p class="mt-2 text-sm text-slate-600 leading-6">${item.reason ? item.reason : "-"}</p>
+        <p class="mt-2 text-xs text-slate-500">
+          Harusnya kembali jam <span class="font-semibold text-slate-700">${item.should_return_time}</span>
+        </p>
+        <a href="/pengasuhan/requests/${item.id}" class="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-700">Detail Pengajuan →</a>
+      </div>
+    `;
+  }
+
+  if (lateCountBadge) {
+    lateCountBadge.addEventListener("click", () => {
+
+      const cardsHtml = lateHandphones.length
+        ? lateHandphones.map(renderLateHandphoneCard).join("")
+        : `<p style="text-align:left" class="text-sm text-slate-500">Tidak ada mahasantri yang telat saat ini.</p>`;
+
+      Swal.fire({
+        icon: "warning",
+        title: "Mahasantri Telat Mengembalikan HP",
+        html: `<div style="max-height:420px; overflow-y:auto;">${cardsHtml}</div>`,
+        confirmButtonText: "Tutup",
+        confirmButtonColor: "#2563eb",
+        width: 560,
+      });
+
+    });
+  }
 
   const lateData = {{ stats.late_chart|tojson }};
 
