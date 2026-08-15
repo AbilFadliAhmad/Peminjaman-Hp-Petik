@@ -62,13 +62,6 @@
       <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Keperluan / Alasan Keluar</p>
       <div class="mt-3 rounded-2xl border border-slate-200 bg-white p-5 leading-7 text-slate-700">{{ data.reason }}</div>
     </div>
-
-    <div class="border-t border-slate-200 bg-red-50/60 px-6 py-6">
-      <p class="text-xs font-semibold uppercase tracking-wide text-red-500">Persetujuan Syarat & Ketentuan Santri</p>
-      <p class="mt-3 text-sm leading-6 text-red-700">
-        {% if data.agreement_accepted %} ✅ Santri telah menyetujui Syarat & Ketentuan pada {{ data.agreement_accepted_at|format_datetime }}. {% else %} ⚠️ Santri belum menyetujui Syarat & Ketentuan. {% endif %}
-      </p>
-    </div>
   </div>
 
   {% if data.status == "PENDING" %}
@@ -80,9 +73,33 @@
 
     <form id="decisionForm" method="POST">
       <div class="space-y-6 p-6">
+        <!-- Penyesuaian Waktu Pengembalian (Tanggal & Jam Terpisah) -->
         <div>
-          <label for="return_deadline" class="mb-2 block text-sm font-medium text-slate-700"> Batas Waktu Wajib Kembali ke Pondok </label>
-          <input id="return_deadline" name="return_deadline" class="modern-input" placeholder="Pilih tanggal & jam wajib kembali" />
+          <label class="mb-2 block text-sm font-semibold text-slate-700">Batas Waktu Wajib Kembali ke Pondok</label>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label for="return_date" class="mb-1 block text-xs font-medium text-slate-500">Tanggal Kembali</label>
+              <input
+                type="date"
+                id="return_date"
+                name="return_date"
+                value="{{ suggested_deadline.strftime('%Y-%m-%d') if suggested_deadline and suggested_deadline.strftime else (suggested_deadline.split(' ')[0] if suggested_deadline else '') }}"
+                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+            <div>
+              <label for="return_time" class="mb-1 block text-xs font-medium text-slate-500">Jam Kembali</label>
+              <input
+                type="time"
+                id="return_time"
+                name="return_time"
+                value="{{ suggested_deadline.strftime('%H:%M') if suggested_deadline and suggested_deadline.strftime else (suggested_deadline.split(' ')[1][:5] if suggested_deadline else '') }}"
+                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+          </div>
+          <!-- Input Hidden untuk Mengirimkan Format 'YYYY-MM-DD HH:MM' ke Backend -->
+          <input type="hidden" id="return_deadline" name="return_deadline" />
           <p class="mt-2 text-xs text-slate-400">Terisi otomatis berdasarkan pengaturan default, dapat diubah sesuai kebutuhan. Wajib diisi saat menyetujui pengajuan.</p>
         </div>
 
@@ -90,26 +107,13 @@
           <label for="admin_note" class="mb-2 block text-sm font-medium text-slate-700"> Catatan Pengasuhan </label>
           <textarea id="admin_note" name="admin_note" rows="4" placeholder="Tambahkan catatan untuk santri (opsional)..." class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"></textarea>
         </div>
+
         <input type="hidden" name="permit_id" value="{{ data.id }}">
+
         <div class="flex justify-end gap-3">
           <button type="submit" formaction="{{ url_for('pengasuhan_permit_reject') }}" formnovalidate class="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-red-700">Tolak</button>
           <button type="submit" formaction="{{ url_for('pengasuhan_permit_approve') }}" class="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700">Setujui</button>
         </div>
-      </div>
-    </form>
-  </div>
-
-  {% elif data.status == "APPROVED" %}
-  <div class="overflow-hidden rounded-3xl border border-emerald-200 bg-white shadow-lg">
-    <div class="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-white px-6 py-5">
-      <h2 class="text-lg font-semibold text-slate-800">Konfirmasi Kembali ke Pondok</h2>
-      <p class="mt-1 text-sm text-slate-500">Tandai apabila santri sudah kembali ke pondok.</p>
-    </div>
-
-    <form method="POST" action="{{ url_for('pengasuhan_permit_finish', request_id=data.id) }}" id="finishForm">
-      <div class="flex justify-end gap-3 p-6">
-        <input type="hidden" name="permit_id" value="{{ data.id }}">
-        <button type="submit" class="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700">✅ Tandai Sudah Kembali</button>
       </div>
     </form>
   </div>
@@ -118,17 +122,6 @@
 {% endblock %} {% block script %}
 <script>
   {% if data.status == "PENDING" %}
-  flatpickr("#return_deadline", {
-    enableTime: true,
-    dateFormat: "Y-m-d H:i",
-    altInput: true,
-    altFormat: "d F Y, H:i",
-    time_24hr: true,
-    {% if suggested_deadline %}
-    defaultDate: "{{ suggested_deadline.strftime('%Y-%m-%d %H:%M') }}",
-    {% endif %}
-  });
-
   const decisionForm = document.getElementById("decisionForm");
   let submitAction = null;
 
@@ -142,16 +135,23 @@
     e.preventDefault();
 
     const isApprove = submitAction && submitAction.includes("/approve");
-    const deadline = document.getElementById("return_deadline").value;
+    const returnDate = document.getElementById("return_date").value;
+    const returnTime = document.getElementById("return_time").value;
 
-    if (isApprove && !deadline) {
+    // Validasi saat tombol Setujui diklik
+    if (isApprove && (!returnDate || !returnTime)) {
       Swal.fire({
         icon: "warning",
-        title: "Batas Waktu Belum Diisi",
-        text: "Batas Waktu Wajib Kembali harus diisi sebelum menyetujui pengajuan.",
+        title: "Batas Waktu Belum Lengkap",
+        text: "Tanggal dan Jam wajib kembali harus diisi sebelum menyetujui pengajuan.",
         confirmButtonColor: "#2563eb"
       });
       return;
+    }
+
+    // Gabungkan tanggal dan jam ke hidden input 'return_deadline' (agar backend menerima gabungan datetime)
+    if (returnDate && returnTime) {
+      document.getElementById("return_deadline").value = `${returnDate} ${returnTime}`;
     }
 
     const result = await Swal.fire({
@@ -174,23 +174,26 @@
   {% endif %}
 
   {% if data.status == "APPROVED" %}
-  document.getElementById("finishForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
+  const finishForm = document.getElementById("finishForm");
+  if (finishForm) {
+    finishForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
 
-    const result = await Swal.fire({
-      icon: "question",
-      title: "Tandai Sudah Kembali?",
-      text: "Status pengajuan akan diubah menjadi Finished.",
-      showCancelButton: true,
-      confirmButtonText: "Ya, Tandai",
-      cancelButtonText: "Batal",
-      confirmButtonColor: "#16a34a"
+      const result = await Swal.fire({
+        icon: "question",
+        title: "Tandai Sudah Kembali?",
+        text: "Status pengajuan akan diubah menjadi Finished.",
+        showCancelButton: true,
+        confirmButtonText: "Ya, Tandai",
+        cancelButtonText: "Batal",
+        confirmButtonColor: "#16a34a"
+      });
+
+      if (!result.isConfirmed) return;
+
+      this.submit();
     });
-
-    if (!result.isConfirmed) return;
-
-    this.submit();
-  });
+  }
   {% endif %}
 </script>
 {% endblock %}

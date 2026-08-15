@@ -1,86 +1,152 @@
 <!doctype html>
 <html lang="id">
   <head>
-    <meta charset="UTF-8" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Primary Meta Tags (SEO) -->
+  <title>{% block title %} Peminjaman HP {% endblock %}</title>
 
-    <title>{% block title %} Peminjaman HP {% endblock %}</title>
+  <!-- Primary Meta Tags (SEO) -->
+  <meta name="title" content="{% block meta_title %}{{ self.title() }} - PeTIK 2 Jombang {% endblock %}" />
+  <meta name="description" content="Sistem Informasi Pengajuan Peminjaman HP dan Izin Keluar Santri Pesantren PeTIK 2 Jombang secara praktis, tertib, dan terkontrol." />
+  <meta name="keywords" content="petik 2 jombang, peminjaman hp petik, izin keluar santri, perizinan pondok, manajemen pengasuhan, mahasantri petik" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="Abil Fadli Ahmad - PeTIK 2 Jombang" />
+    
+  <!-- Canonical URL (Mencegah Duplikasi Konten di Google Index) -->
+  <link rel="canonical" href="{{ request.url }}" />
 
-    <!-- TailwindCSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Favicon (Icon di sebelah Title Tab Browser) -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/petik.png') }}" />
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/petik.png') }}" />
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/petik.png') }}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/petik.png') }}" />
 
-    <!-- ChartJS -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Open Graph / Facebook / WhatsApp (SEO Preview saat Share Link) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Sistem Perizinan PeTIK 2 Jombang" />
+  <meta property="og:url" content="{{ request.url }}" />
+  <meta property="og:title" content="{% block og_title %}{{ self.title() }} - PeTIK 2 Jombang{% endblock %}" />
+  <meta property="og:description" content="Sistem Informasi Pengajuan Peminjaman HP & Izin Keluar Santri Pesantren PeTIK 2 Jombang." />
+  <meta property="og:image" content="{{ url_for('static', filename='images/petik.png', _external=True) }}" />
 
-    <!-- SweetAlert -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="{{ request.url }}" />
+  <meta name="twitter:title" content="{% block twitter_title %}{{ self.title() }} - PeTIK 2 Jombang{% endblock %}" />
+  <meta name="twitter:description" content="Sistem Informasi Pengajuan Peminjaman HP & Izin Keluar Santri Pesantren PeTIK 2 Jombang." />
+  <meta name="twitter:image" content="{{ url_for('static', filename='images/petik.png', _external=True) }}" />
 
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
-    <!-- Flatpickr -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-    <!-- FilePond -->
-    <link href="https://unpkg.com/filepond/dist/filepond.min.css" rel="stylesheet" />
-    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css" rel="stylesheet" />
-    <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.min.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.min.js"></script>
-
-    <style>
-      body {
-        font-family: "Inter", sans-serif;
-
-        background: #f5f7fb;
+  <!-- Structured Data / JSON-LD (SEO Schema) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "EducationalOrganization",
+        "@id": "{{ request.url_root }}#organization",
+        "name": "Pesantren PeTIK 2 Jombang",
+        "alternateName": "Pesantren Teknologi Informasi dan Komunikasi 2 Jombang",
+        "url": "{{ request.url_root }}",
+        "logo": "{{ url_for('static', filename='images/petik.png', _external=True) }}"
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "{{ request.url }}#webapp",
+        "url": "{{ request.url }}",
+        "name": "Sistem Perizinan Santri PeTIK 2 Jombang",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "All",
+        "author": {
+          "@type": "Person",
+          "name": "Abil Fadli Ahmad"
+        },
+        "publisher": {
+          "@id": "{{ request.url_root }}#organization"
+        },
+        "provider": {
+          "@id": "{{ request.url_root }}#organization"
+        },
+        "description": "Aplikasi perizinan peminjaman HP dan izin keluar santri di Pesantren PeTIK 2 Jombang."
       }
+    ]
+  }
+  </script>
 
-      .modern-input {
-        width: 100%;
-        border-radius: 1rem; /* 16px / 2xl */
-        border: 1px solid #cbd5e1; /* slate-300 */
-        background-color: #ffffff; /* white */
-        padding: 0.75rem 1rem; /* py-3 px-4 */
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); /* transition */
-      }
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-      .modern-input:focus {
-        outline: none;
-        border-color: #3b82f6; /* focus:border-blue-500 */
-        box-shadow: 0 0 0 4px #dbeafe; /* focus:ring-4 focus:ring-blue-100 */
-      }
+  <!-- ChartJS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-      .filepond--root {
-        margin-top: 12px;
-      }
+  <!-- SweetAlert -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-      .filepond--panel-root {
-        border-radius: 18px;
-        border: 2px dashed #cbd5e1;
-        background: #f8fafc;
-      }
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-      .filepond--drop-label {
-        color: #475569;
-        min-height: 220px;
-      }
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-      .filepond--label-action {
-        color: #2563eb;
-        font-weight: 600;
-      }
+  <!-- FilePond -->
+  <link href="https://unpkg.com/filepond/dist/filepond.min.css" rel="stylesheet" />
+  <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css" rel="stylesheet" />
+  <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
+  <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.js"></script>
+  <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.min.js"></script>
+  <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.min.js"></script>
 
-      .filepond--credits {
-        display: none;
-      }
-    </style>
-  </head>
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background: #f5f7fb;
+    }
+
+    .modern-input {
+      width: 100%;
+      border-radius: 1rem; /* 16px / 2xl */
+      border: 1px solid #cbd5e1; /* slate-300 */
+      background-color: #ffffff; /* white */
+      padding: 0.75rem 1rem; /* py-3 px-4 */
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modern-input:focus {
+      outline: none;
+      border-color: #3b82f6; /* focus:border-blue-500 */
+      box-shadow: 0 0 0 4px #dbeafe; /* focus:ring-4 focus:ring-blue-100 */
+    }
+
+    .filepond--root {
+      margin-top: 12px;
+    }
+
+    .filepond--panel-root {
+      border-radius: 18px;
+      border: 2px dashed #cbd5e1;
+      background: #f8fafc;
+    }
+
+    .filepond--drop-label {
+      color: #475569;
+      min-height: 220px;
+    }
+
+    .filepond--label-action {
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .filepond--credits {
+      display: none;
+    }
+  </style>
+</head>
 
   <body>
     {% if session.get('user_id') %}

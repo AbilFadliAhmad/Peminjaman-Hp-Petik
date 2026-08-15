@@ -8,24 +8,78 @@
     </div>
   </div>
 
-  <!-- Panel Pengaturan Default -->
-  <div class="rounded-3xl border border-indigo-200 bg-indigo-50 p-6">
-    <div class="flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <div class="flex items-start gap-4">
-        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-2xl">⏱️</div>
-        <div>
-          <h2 class="font-semibold text-indigo-900">Default Batas Waktu Wajib Kembali</h2>
-          <p class="mt-1 text-sm leading-6 text-indigo-800">Nilai ini dipakai sebagai saran otomatis saat menyetujui pengajuan (jam keluar + durasi ini). Admin tetap dapat mengubahnya secara manual per pengajuan.</p>
-        </div>
+  <!-- Panel Pengaturan Agreement (Syarat & Ketentuan) -->
+  <div class="rounded-3xl border border-indigo-200 bg-indigo-50 p-5 sm:p-6 shadow-sm">
+  <!-- Header Card & Tombol Toggle -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-start gap-3.5">
+      <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-xl shadow-sm">
+        📜
       </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h2 class="font-bold text-indigo-950 text-base sm:text-lg">Syarat & Ketentuan Izin Keluar</h2>
+          <span class="rounded-full bg-indigo-200/70 px-2.5 py-0.5 text-[11px] font-bold text-indigo-800">Aktif</span>
+        </div>
+        <p class="mt-0.5 text-xs sm:text-sm text-indigo-800/80">
+          Aturan ini wajib disetujui santri sebelum mengirim pengajuan izin keluar.
+        </p>
+      </div>
+    </div>
 
-      <form method="POST" action="{{ url_for('pengasuhan_permit_update_settings') }}" class="flex items-center gap-3">
-        <input type="number" min="1" name="default_return_hours" value="{{ settings.default_return_hours }}" class="w-24 rounded-xl border border-indigo-300 bg-white px-4 py-2.5 text-sm shadow-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100" />
-        <span class="text-sm font-medium text-indigo-800">jam</span>
-        <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700">Simpan</button>
-      </form>
+    <!-- Tombol Edit -->
+    <button
+      type="button"
+      id="btnToggleAgreement"
+      onclick="toggleAgreementEdit()"
+      class="inline-flex shrink-0 items-center gap-2 self-start rounded-xl border border-indigo-300 bg-white px-4 py-2 text-xs font-semibold text-indigo-900 shadow-sm transition hover:bg-indigo-100 hover:border-indigo-400 sm:self-center"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      </svg>
+      <span id="btnAgreementText">Edit Aturan</span>
+    </button>
+  </div>
+
+  <!-- 1. MODE TAMPIL (Default - Ringkas & Tidak Memakan Tempat) -->
+  <div id="agreementView" class="mt-4 rounded-2xl border border-indigo-200/70 bg-white/80 p-4 backdrop-blur-sm">
+    <p class="text-[11px] font-semibold uppercase tracking-wider text-indigo-400 mb-1.5">Isi Aturan Saat Ini:</p>
+    <div class="max-h-36 overflow-y-auto text-xs sm:text-sm leading-relaxed text-slate-700 whitespace-pre-line pr-1 custom-scrollbar">
+      {{ agreement_text if agreement_text else 'Belum ada syarat & ketentuan yang diatur.' }}
     </div>
   </div>
+
+  <!-- 2. MODE EDIT (Tersembunyi sampai tombol Edit diklik) -->
+  <form id="agreementEditForm" method="POST" action="{{ url_for('pengasuhan_permit_update_agreement') }}" class="hidden mt-4 space-y-4">
+    <div>
+      <label for="agreement_content" class="mb-1.5 block text-xs font-semibold text-indigo-950">Ubah Teks Syarat & Ketentuan</label>
+      <textarea
+        id="agreement_content"
+        name="content"
+        rows="5"
+        required
+        placeholder="Tuliskan syarat & ketentuan izin keluar pondok..."
+        class="w-full rounded-2xl border border-indigo-300 bg-white p-4 text-xs sm:text-sm text-slate-800 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+      >{{ agreement_text }}</textarea>
+    </div>
+
+    <div class="flex items-center justify-end gap-2.5">
+      <button
+        type="button"
+        onclick="toggleAgreementEdit()"
+        class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+      >
+        Batal
+      </button>
+      <button
+        type="submit"
+        class="rounded-xl bg-indigo-600 px-5 py-2 text-xs font-medium text-white transition hover:bg-indigo-700 shadow-sm"
+      >
+        Simpan Perubahan
+      </button>
+    </div>
+  </form>
+</div>
 
   <div class="bg-white rounded-3xl border border-slate-200 shadow-lg overflow-hidden">
     <div class="border-b bg-gradient-to-r from-slate-50 to-white px-4 py-5 sm:px-6 sm:py-6">
@@ -142,5 +196,23 @@
   import requestTable from "{{ url_for('static', filename='js/permits-table.js') }}";
 
   requestTable();
+
+  window.toggleAgreementEdit = function () {
+    const viewEl = document.getElementById("agreementView");
+    const formEl = document.getElementById("agreementEditForm");
+    const btnText = document.getElementById("btnAgreementText");
+
+    const isHidden = formEl.classList.contains("hidden");
+
+    if (isHidden) {
+      formEl.classList.remove("hidden");
+      viewEl.classList.add("hidden");
+      btnText.textContent = "Tutup";
+    } else {
+      formEl.classList.add("hidden");
+      viewEl.classList.remove("hidden");
+      btnText.textContent = "Edit Aturan";
+    }
+  }
 </script>
 {% endblock %}

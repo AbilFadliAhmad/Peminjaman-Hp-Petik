@@ -67,7 +67,9 @@ def initialize_database():
             role ENUM(
                 'santri',
                 'pengasuhan',
-                'koordinator'
+                'koordinator',
+                'direktur',
+                'security'
             ) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -244,6 +246,43 @@ def initialize_database():
        """)
 
     # ============================
+    # AUDIT LOG (Direktur)
+    # ============================
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS audit_logs(
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NULL,
+            actor_name VARCHAR(100) NULL,
+            actor_role VARCHAR(30) NULL,
+            action VARCHAR(100) NOT NULL,
+            target_type VARCHAR(50) NULL,
+            target_id INT NULL,
+            description TEXT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY(user_id) REFERENCES users(id)
+                ON DELETE SET NULL
+        )
+    """)
+
+    # Perlebar kolom role pada tabel users yang sudah ada sebelumnya
+    # (upgrade dari versi lama yang belum mengenal role 'direktur')
+    try:
+        cursor.execute("""
+            ALTER TABLE users
+            MODIFY COLUMN role ENUM(
+                'santri',
+                'pengasuhan',
+                'koordinator',
+                'direktur',
+                'security'
+            ) NOT NULL
+        """)
+    except Exception as e:
+        print("Info: gagal memperbarui ENUM role (mungkin sudah sesuai):", e)
+
+    # ============================
     # Dummy User
     # ============================
 
@@ -272,6 +311,20 @@ def initialize_database():
                 "koordinator",
                 generate_password_hash("123456"),
                 "koordinator"
+            ),
+
+            (
+                "Direktur",
+                "direktur",
+                generate_password_hash("123456"),
+                "direktur"
+            ),
+
+            (
+                "Security",
+                "security",
+                generate_password_hash("123456"),
+                "security"
             )
 
         ]
@@ -300,6 +353,37 @@ def initialize_database():
                INSERT INTO exit_permit_settings(id, default_return_hours)
                VALUES (1, 4)
                """)
+
+    # ============================
+    # SYARAT & KETENTUAN (AGREEMENT) IZIN KELUAR
+    # ============================
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS exit_permit_agreements(
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            content TEXT NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_by INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
+                DEFAULT CURRENT_TIMESTAMP
+                ON UPDATE CURRENT_TIMESTAMP,
+
+            FOREIGN KEY(created_by) REFERENCES users(id)
+        )
+    """)
+
+    # Dummy / Default Agreement jika tabel masih kosong
+    cursor.execute("SELECT COUNT(*) AS total FROM exit_permit_agreements")
+    if cursor.fetchone()["total"] == 0:
+        cursor.execute("""
+            INSERT INTO exit_permit_agreements (content)
+            VALUES (%s)
+        """, (
+            "1. Santri wajib kembali ke pondok tepat waktu sesuai batas waktu yang disetujui Pengasuhan.\n"
+            "2. Santri wajib menjaga nama baik almamater selama berada di luar pondok.\n"
+            "3. Keterlambatan tanpa alasan syar'i akan dikenakan sanksi sesuai tata tertib pondok."
+            ,))
 
     db.close()
     print("Database berhasil diinisialisasi.")

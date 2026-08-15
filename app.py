@@ -54,6 +54,8 @@ STATUS_CANCELLED = "CANCELLED"
 ROLE_SANTRI = "santri"
 ROLE_PENGASUHAN = "pengasuhan"
 ROLE_KOORDINATOR = "koordinator"
+ROLE_DIREKTUR = "direktur"
+ROLE_SECURITY = "security"
 
 UPLOAD_BORROW_DIR = os.path.join(
     "static",
@@ -96,9 +98,14 @@ SIDEBAR_MENUS = {
             "icon": "🚪"
         },
         {
-            "title": "Santri",
+            "title": "Mahasantri",
             "endpoint": "pengasuhan_users",
             "icon": "👨‍🎓"
+        },
+        {
+            "title": "Mahasantri Telat",
+            "endpoint": "pengasuhan_late_students",
+            "icon": "⏰"
         },
 
         {
@@ -107,11 +114,6 @@ SIDEBAR_MENUS = {
             "icon": "⏸️"
         },
 
-        {
-            "title": "Mahasantri Telat",
-            "endpoint": "pengasuhan_late_students",
-            "icon": "⏰"
-        }
     ],
 
     ROLE_KOORDINATOR: [
@@ -132,6 +134,50 @@ SIDEBAR_MENUS = {
             "title": "Jadwal Istirahat",
             "endpoint": "koordinator_rest_schedule",
             "icon": "⏸️"
+        }
+
+    ],
+
+    ROLE_DIREKTUR: [
+
+        {
+            "title": "Dashboard",
+            "endpoint": "direktur_dashboard",
+            "icon": "🏠"
+        },
+
+        {
+            "title": "Semua Anggota",
+            "endpoint": "direktur_users",
+            "icon": "👥"
+        },
+
+        {
+            "title": "Pengajuan HP",
+            "endpoint": "direktur_requests",
+            "icon": "📱"
+        },
+
+        {
+            "title": "Pengajuan Keluar",
+            "endpoint": "direktur_permits",
+            "icon": "🚪"
+        },
+
+        {
+            "title": "Audit Log",
+            "endpoint": "direktur_audit_log",
+            "icon": "🧾"
+        }
+
+    ],
+
+    ROLE_SECURITY: [
+
+        {
+            "title": "Verifikasi Izin Keluar",
+            "endpoint": "security_permits",
+            "icon": "🛡️"
         }
 
     ]
@@ -576,14 +622,26 @@ def format_dt_time(value):
 
     dt = parse_datetime_value(value)
 
-    return dt.strftime("%H:%M") if dt else "-"
+    if dt:
+        return dt.strftime("%H:%M")
+
+    if hasattr(value, "strftime"):
+        return value.strftime("%H:%M")
+
+    return "-"
 
 
 def format_dt_date(value):
 
     dt = parse_datetime_value(value)
 
-    return dt.strftime("%d-%m-%Y") if dt else "-"
+    if dt:
+        return dt.strftime("%d-%m-%Y")
+
+    if hasattr(value, "strftime"):
+        return value.strftime("%d-%m-%Y")
+
+    return "-"
 
 
 def get_late_recaps_list():
@@ -743,6 +801,180 @@ def get_user_late_chart(user_id, range_type):
         }
         for row in rows
     ]
+
+
+# ==========================================================
+# Audit Log Helper (Direktur)
+# ==========================================================
+
+def log_activity(action, target_type=None, target_id=None, description=None):
+
+    """
+    Mencatat sebuah aksi ke dalam tabel audit_logs.
+    Dipanggil setelah aksi-aksi penting berhasil dilakukan,
+    seperti approve/reject/finish pengajuan, pengelolaan akun
+    santri, dan pengaturan jadwal istirahat.
+    """
+
+    try:
+        execute(
+            """
+            INSERT INTO audit_logs
+            (
+                user_id,
+                actor_name,
+                actor_role,
+                action,
+                target_type,
+                target_id,
+                description
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                session.get("user_id"),
+                session.get("name"),
+                session.get("role"),
+                action,
+                target_type,
+                target_id,
+                description
+            )
+        )
+    except Exception as e:
+        # Kegagalan pencatatan log tidak boleh menggagalkan aksi utama
+        print("Gagal mencatat audit log:", e)
+
+
+def get_audit_logs():
+
+    return query("""
+        SELECT *
+        FROM audit_logs
+        ORDER BY created_at DESC
+        LIMIT 500
+    """)
+
+
+def get_audit_log_by_id(log_id):
+
+    return query(
+        """
+        SELECT *
+        FROM audit_logs
+        WHERE id=%s
+        """,
+        (log_id,),
+        one=True
+    )
+
+
+# ==========================================================
+# Direktur Helper
+# ==========================================================
+
+def get_all_borrow_requests_for_direktur(status=None):
+
+    sql = """
+        SELECT
+            br.id,
+            u.name,
+            br.reason,
+            br.start_datetime,
+            br.end_datetime,
+            br.status,
+            br.created_at
+        FROM borrow_requests br
+        JOIN users u
+            ON u.id = br.user_id
+    """
+
+    params = []
+
+    if status:
+        sql += " WHERE br.status=%s"
+        params.append(status)
+
+    sql += " ORDER BY br.created_at DESC"
+
+    return query(sql, tuple(params))
+
+
+def get_all_permits_for_direktur(status=None):
+
+    sql = """
+        SELECT
+            ep.id,
+            ep.user_id,
+            u.name,
+            ep.reason,
+            ep.departure_date,
+            ep.departure_time,
+            ep.status,
+            ep.return_deadline,
+            ep.returned_at,
+            ep.created_at
+        FROM exit_permits ep
+        JOIN users u
+            ON u.id = ep.user_id
+    """
+
+    params = []
+
+    if status:
+        sql += " WHERE ep.status=%s"
+        params.append(status)
+
+    sql += " ORDER BY ep.created_at DESC"
+
+    return query(sql, tuple(params))
+
+
+def direktur_statistics():
+
+    total_users = query(
+        "SELECT COUNT(*) total FROM users",
+        one=True
+    )["total"]
+
+    total_santri_count = total_santri()
+
+    total_borrow = query(
+        "SELECT COUNT(*) total FROM borrow_requests",
+        one=True
+    )["total"]
+
+    total_borrow_active = query(
+        "SELECT COUNT(*) total FROM borrow_requests WHERE status=%s",
+        (STATUS_APPROVED,),
+        one=True
+    )["total"]
+
+    total_permit = query(
+        "SELECT COUNT(*) total FROM exit_permits",
+        one=True
+    )["total"]
+
+    total_permit_active = query(
+        "SELECT COUNT(*) total FROM exit_permits WHERE status=%s",
+        (STATUS_APPROVED,),
+        one=True
+    )["total"]
+
+    total_logs = query(
+        "SELECT COUNT(*) total FROM audit_logs",
+        one=True
+    )["total"]
+
+    return {
+        "total_users": total_users,
+        "total_santri": total_santri_count,
+        "total_borrow": total_borrow,
+        "total_borrow_active": total_borrow_active,
+        "total_permit": total_permit,
+        "total_permit_active": total_permit_active,
+        "total_logs": total_logs
+    }
 
 
 def pengasuhan_statistics():
@@ -971,19 +1203,6 @@ def get_koordinator_requests(status=None):
 # ==========================================================
 # Pengasuhan Helper
 # ==========================================================
-
-def get_all_users():
-
-    return query("""
-        SELECT
-            id,
-            name,
-            username,
-            role,
-            created_at
-        FROM users
-        ORDER BY created_at DESC
-    """)
 
 def get_user_by_id(user_id):
 
@@ -1330,6 +1549,12 @@ def dashboard_redirect():
     if role == ROLE_KOORDINATOR:
         return redirect(url_for("koordinator_dashboard"))
 
+    if role == ROLE_DIREKTUR:
+        return redirect(url_for("direktur_dashboard"))
+
+    if role == ROLE_SECURITY:
+        return redirect(url_for("security_permits"))
+
     return redirect(url_for("login"))
 
 @app.route("/")
@@ -1369,6 +1594,13 @@ def login():
         "username": user["username"],
         "role": user["role"]
     })
+
+    log_activity(
+        "LOGIN",
+        target_type="auth",
+        target_id=user["id"],
+        description=f"{user['name']} berhasil login sebagai {user['role']}."
+    )
 
     flash(f"Selamat datang, {user['name']}.", "success")
 
@@ -1956,14 +2188,16 @@ def santri_izin_keluar_pengajuan():
         return redirect(url_for("santri_izin_keluar"))
 
     if request.method == "GET":
-
-        DISCLAIMER_TEXT = (
-            "Segala bentuk penyelundupan barang terlarang ke wilayah pondok "
-            "akan berimbas kepada kebijakan yang tidak menguntungkan santri."
+        # Ambil Syarat & Ketentuan terbaru yang aktif dari Pengasuhan
+        agreement = query(
+            "SELECT content FROM exit_permit_agreements WHERE is_active = TRUE ORDER BY id DESC LIMIT 1",
+            one=True
         )
+        agreement_text = agreement["content"] if agreement else "Wajib mematuhi tata tertib perizinan keluar pondok."
+        
         return render_template(
             "santri/permit_form.html",
-            disclaimer_text=DISCLAIMER_TEXT
+            disclaimer_text=agreement_text
         )
 
     # POST
@@ -2093,6 +2327,13 @@ def approve_request(request_id):
         )
 
     flash("Pengajuan berhasil disetujui.", "success")
+    log_activity(
+        "APPROVE_BORROW",
+        target_type="borrow_request",
+        target_id=request_id,
+        description=f"Menyetujui pengajuan peminjaman HP #{request_id}."
+        + (f" Catatan: {pengasuhan_note}" if pengasuhan_note else "")
+    )
     return redirect(url_for("pengasuhan_requests"))
 
 @app.route(
@@ -2130,6 +2371,13 @@ def reject_request(request_id):
         request_id,
         current_user()["id"],
         pengasuhan_note
+    )
+
+    log_activity(
+        "REJECT_BORROW",
+        target_type="borrow_request",
+        target_id=request_id,
+        description=f"Menolak pengajuan peminjaman HP #{request_id}. Alasan: {pengasuhan_note}"
     )
 
     flash(
@@ -2183,6 +2431,29 @@ def pengasuhan_requests():
         current_status=status
     )
 
+@app.route("/pengasuhan/izin-keluar/agreement", methods=["POST"])
+@login_required
+@role_required(ROLE_PENGASUHAN)
+def pengasuhan_permit_update_agreement():
+    content = request.form.get("content", "").strip()
+
+    if not content:
+        flash("Isi Syarat & Ketentuan tidak boleh kosong.", "warning")
+        return redirect(url_for("pengasuhan_permits"))
+
+    # Matikan agreement lama, buat agreement baru yang aktif
+    execute("UPDATE exit_permit_agreements SET is_active = FALSE WHERE is_active = TRUE")
+    execute(
+        """
+        INSERT INTO exit_permit_agreements (content, created_by, is_active)
+        VALUES (%s, %s, TRUE)
+        """,
+        (content, session["user_id"])
+    )
+
+    flash("Syarat & Ketentuan izin keluar berhasil diperbarui.", "success")
+    return redirect(url_for("pengasuhan_permits"))
+
 @app.route("/pengasuhan/permits")
 @login_required
 @role_required(ROLE_PENGASUHAN)
@@ -2225,20 +2496,19 @@ def pengasuhan_permits():
             """
         )
 
-    settings = query(
-        """
-        SELECT *
-        FROM exit_permit_settings
-        LIMIT 1
-        """,
+    # Ambil agreement aktif untuk ditampilkan di form Pengasuhan
+    agreement = query(
+        "SELECT content FROM exit_permit_agreements WHERE is_active = TRUE ORDER BY id DESC LIMIT 1",
         one=True
     )
+
+    print('permits: ', permits)
 
     return render_template(
         "pengasuhan/permits.html",
         permits=permits,
         current_status=status,
-        settings=settings
+        agreement_text=agreement["content"] if agreement else ""
     )
 
 @app.post("/pengasuhan/permit/update-settings")
@@ -2431,6 +2701,14 @@ def pengasuhan_permit_approve():
         "success"
     )
 
+    log_activity(
+        "APPROVE_PERMIT",
+        target_type="exit_permit",
+        target_id=permit_id,
+        description=f"Menyetujui pengajuan izin keluar #{permit_id}."
+        + (f" Catatan: {admin_note}" if admin_note else "")
+    )
+
     return redirect(
         url_for("pengasuhan_permits")
     )
@@ -2490,6 +2768,14 @@ def pengasuhan_permit_reject():
         "success"
     )
 
+    log_activity(
+        "REJECT_PERMIT",
+        target_type="exit_permit",
+        target_id=permit_id,
+        description=f"Menolak pengajuan izin keluar #{permit_id}."
+        + (f" Alasan: {admin_note}" if admin_note else "")
+    )
+
     return redirect(
         url_for("pengasuhan_permits")
     )
@@ -2541,6 +2827,14 @@ def pengasuhan_permit_finish():
         "Santri berhasil ditandai sudah kembali ke pondok.",
         "success"
     )
+
+    log_activity(
+        "FINISH_PERMIT",
+        target_type="exit_permit",
+        target_id=permit_id,
+        description=f"Menandai santri sudah kembali untuk izin keluar #{permit_id}."
+    )
+
     return redirect(
         url_for("pengasuhan_permits")
     )
@@ -2769,7 +3063,18 @@ def pengasuhan_late_student_detail(user_id):
 @role_required(ROLE_PENGASUHAN)
 def pengasuhan_users():
 
-    users = get_all_users()
+    users = query("""
+        SELECT
+            id,
+            name,
+            username,
+            role,
+            created_at
+        FROM users
+        WHERE role = 'santri' OR role = 'koordinator'
+        ORDER BY created_at DESC
+    """)
+
     return render_template(
         "pengasuhan/users.html",
         users=users,
@@ -2810,6 +3115,12 @@ def pengasuhan_users_create():
         username,
         password,
         role
+    )
+
+    log_activity(
+        "CREATE_USER",
+        target_type="user",
+        description=f"Menambahkan akun baru: {name} ({username}) dengan role {role}."
     )
 
     flash(
@@ -2924,6 +3235,13 @@ def pengasuhan_users_update(user_id):
         "success"
     )
 
+    log_activity(
+        "UPDATE_USER",
+        target_type="user",
+        target_id=user_id,
+        description=f"Memperbarui data akun: {name} ({username}), role {role}."
+    )
+
     return redirect(
         url_for("pengasuhan_users")
     )
@@ -2982,8 +3300,12 @@ def pengasuhan_rest_schedule_create():
     )
 
     flash("Jadwal istirahat berhasil ditambahkan.", "success")
+    log_activity(
+        "CREATE_REST_SCHEDULE",
+        target_type="pengasuhan_rest_schedule",
+        description=f"Menambahkan jadwal istirahat (Pengasuhan): {title} ({start_time} - {end_time})."
+    )
     return redirect(url_for("pengasuhan_rest_schedule"))
-
 
 @app.post("/pengasuhan/jadwal-istirahat/update/<int:schedule_id>")
 @login_required
@@ -3029,6 +3351,12 @@ def pengasuhan_rest_schedule_update(schedule_id):
     )
 
     flash("Jadwal istirahat berhasil diperbarui.", "success")
+    log_activity(
+        "UPDATE_REST_SCHEDULE",
+        target_type="pengasuhan_rest_schedule",
+        target_id=schedule_id,
+        description=f"Memperbarui jadwal istirahat (Pengasuhan): {title} ({start_time} - {end_time})."
+    )
     return redirect(url_for("pengasuhan_rest_schedule"))
 
 
@@ -3049,6 +3377,12 @@ def pengasuhan_rest_schedule_delete(schedule_id):
     )
 
     flash("Jadwal istirahat berhasil dihapus.", "success")
+    log_activity(
+        "DELETE_REST_SCHEDULE",
+        target_type="pengasuhan_rest_schedule",
+        target_id=schedule_id,
+        description=f"Menghapus jadwal istirahat (Pengasuhan): {schedule['title']}."
+    )
     return redirect(url_for("pengasuhan_rest_schedule"))
 
 # ==========================================================
@@ -3178,6 +3512,11 @@ def koordinator_rest_schedule_create():
     )
 
     flash("Jadwal istirahat berhasil ditambahkan.", "success")
+    log_activity(
+        "CREATE_REST_SCHEDULE",
+        target_type="koordinator_rest_schedule",
+        description=f"Menambahkan jadwal istirahat (Koordinator): {title} ({start_time} - {end_time})."
+    )
     return redirect(url_for("koordinator_rest_schedule"))
 
 
@@ -3225,6 +3564,12 @@ def koordinator_rest_schedule_update(schedule_id):
     )
 
     flash("Jadwal istirahat berhasil diperbarui.", "success")
+    log_activity(
+        "UPDATE_REST_SCHEDULE",
+        target_type="koordinator_rest_schedule",
+        target_id=schedule_id,
+        description=f"Memperbarui jadwal istirahat (Koordinator): {title} ({start_time} - {end_time})."
+    )
     return redirect(url_for("koordinator_rest_schedule"))
 
 
@@ -3245,6 +3590,12 @@ def koordinator_rest_schedule_delete(schedule_id):
     )
 
     flash("Jadwal istirahat berhasil dihapus.", "success")
+    log_activity(
+        "DELETE_REST_SCHEDULE",
+        target_type="koordinator_rest_schedule",
+        target_id=schedule_id,
+        description=f"Menghapus jadwal istirahat (Koordinator): {schedule['title']}."
+    )
     return redirect(url_for("koordinator_rest_schedule"))
 
 # ==========================================================
@@ -3349,6 +3700,12 @@ def finish_request(request_id):
             )
 
     flash("Pengembalian berhasil dikonfirmasi.", "success")
+    log_activity(
+        "FINISH_BORROW",
+        target_type="borrow_request",
+        target_id=request_id,
+        description=f"Mengonfirmasi pengembalian HP untuk pengajuan #{request_id} pada {finished_at_str}."
+    )
     return redirect(url_for("koordinator_requests"))
 
 @app.get("/borrow-files/view/<path:file_path>")
@@ -3429,6 +3786,282 @@ def format_datetime(value):
         f"{value.year} "
         f"{value.strftime('%H:%M')}"
     )
+
+
+# ==========================================================
+# Direktur
+# ==========================================================
+
+@app.route("/direktur/dashboard")
+@login_required
+@role_required(ROLE_DIREKTUR)
+def direktur_dashboard():
+
+    stats = direktur_statistics()
+    recent_logs = query(
+        """
+        SELECT *
+        FROM audit_logs
+        ORDER BY created_at DESC
+        LIMIT 8
+        """
+    )
+
+    return render_template(
+        "direktur/dashboard.html",
+        stats=stats,
+        recent_logs=recent_logs
+    )
+
+
+@app.route("/direktur/anggota")
+@login_required
+@role_required(ROLE_DIREKTUR)
+def direktur_users():
+    users = query("""
+        SELECT
+            id,
+            name,
+            username,
+            role,
+            created_at
+        FROM users
+        ORDER BY created_at DESC
+    """)
+
+    return render_template(
+        "direktur/users.html",
+        users=users
+    )
+
+
+@app.route("/direktur/pengajuan-hp")
+@login_required
+@role_required(ROLE_DIREKTUR)
+def direktur_requests():
+
+    status = request.args.get("status")
+
+    if status not in (None, "PENDING", "APPROVED", "REJECTED", "FINISHED"):
+        status = None
+
+    requests_list = get_all_borrow_requests_for_direktur(status)
+
+    return render_template(
+        "direktur/requests.html",
+        requests_list=requests_list,
+        current_status=status
+    )
+
+
+@app.get("/direktur/pengajuan-hp/<int:request_id>/detail")
+@login_required
+@role_required(ROLE_DIREKTUR)
+def direktur_request_detail(request_id):
+
+    data = get_request_by_id(request_id)
+
+    if not data:
+        return jsonify({"error": "Data tidak ditemukan."}), 404
+
+    return jsonify({
+        "id": data["id"],
+        "name": data["name"],
+        "reason": data["reason"],
+        "status": data["status"],
+        "start_datetime": format_dt_date(data["start_datetime"]) + " " + format_dt_time(data["start_datetime"]),
+        "end_datetime": format_dt_date(data["end_datetime"]) + " " + format_dt_time(data["end_datetime"]),
+        "approved_name": data.get("approved_name"),
+        "rejected_name": data.get("rejected_name"),
+        "finished_name": data.get("finished_name"),
+        "pengasuhan_note": data.get("pengasuhan_note"),
+        "created_at": format_dt_date(data["created_at"]) + " " + format_dt_time(data["created_at"]),
+    })
+
+
+@app.route("/direktur/pengajuan-keluar")
+@login_required
+@role_required(ROLE_DIREKTUR)
+def direktur_permits():
+
+    status = request.args.get("status")
+
+    if status not in (None, "PENDING", "APPROVED", "REJECTED", "FINISHED"):
+        status = None
+
+    permits = get_all_permits_for_direktur(status)
+
+    return render_template(
+        "direktur/permits.html",
+        permits=permits,
+        current_status=status
+    )
+
+
+@app.get("/direktur/pengajuan-keluar/<int:permit_id>/detail")
+@login_required
+@role_required(ROLE_DIREKTUR)
+def direktur_permit_detail(permit_id):
+
+    data = query(
+        """
+        SELECT
+            ep.*,
+            u.name
+        FROM exit_permits ep
+        JOIN users u
+            ON u.id = ep.user_id
+        WHERE ep.id=%s
+        """,
+        (permit_id,),
+        one=True
+    )
+
+    if not data:
+        return jsonify({"error": "Data tidak ditemukan."}), 404
+
+    return jsonify({
+        "id": data["id"],
+        "name": data["name"],
+        "reason": data["reason"],
+        "status": data["status"],
+        "departure_date": format_dt_date(data["departure_date"]),
+        "departure_time": time_to_hhmm(data["departure_time"]) or "-",
+        "return_deadline": format_dt_date(data["return_deadline"]) + " " + format_dt_time(data["return_deadline"]) if data["return_deadline"] else "-",
+        "returned_at": format_dt_date(data["returned_at"]) + " " + format_dt_time(data["returned_at"]) if data["returned_at"] else "-",
+        "admin_note": data.get("admin_note"),
+    })
+
+
+@app.route("/direktur/audit-log")
+@login_required
+@role_required(ROLE_DIREKTUR)
+def direktur_audit_log():
+
+    logs = get_audit_logs()
+
+    return render_template(
+        "direktur/audit_log.html",
+        logs=logs
+    )
+
+
+@app.get("/direktur/audit-log/<int:log_id>/detail")
+@login_required
+@role_required(ROLE_DIREKTUR)
+def direktur_audit_log_detail(log_id):
+
+    log = get_audit_log_by_id(log_id)
+
+    if not log:
+        return jsonify({"error": "Data tidak ditemukan."}), 404
+
+    return jsonify({
+        "id": log["id"],
+        "actor_name": log["actor_name"],
+        "actor_role": log["actor_role"],
+        "action": log["action"],
+        "target_type": log["target_type"],
+        "target_id": log["target_id"],
+        "description": log["description"],
+        "created_at": format_dt_date(log["created_at"]) + " " + format_dt_time(log["created_at"]),
+    })
+
+
+# ==========================================================
+# Security
+# ==========================================================
+
+@app.route("/security/izin-keluar")
+@login_required
+@role_required(ROLE_SECURITY)
+def security_permits():
+    status = request.args.get("status", "APPROVED")
+
+    # Base Query
+    sql = """
+        SELECT ep.*, u.name
+        FROM exit_permits ep
+        JOIN users u ON u.id = ep.user_id
+    """
+    params = []
+
+    # Filter Berdasarkan Status
+    if status in ("APPROVED", "FINISHED"):
+        sql += " WHERE ep.status = %s"
+        params.append(status)
+    else:
+        # Default / ALL: Hanya tampilkan data yang relevan untuk Security (APPROVED & FINISHED)
+        sql += " WHERE ep.status IN ('APPROVED', 'FINISHED')"
+        status = "ALL"
+
+    sql += " ORDER BY ep.created_at DESC"
+    permits = query(sql, tuple(params))
+
+    return render_template(
+        "security/permits.html",
+        permits=permits,
+        current_status=status
+    )
+
+@app.post("/security/izin-keluar/<int:permit_id>/finish")
+@login_required
+@role_required(ROLE_SECURITY)
+def security_permit_finish(permit_id):
+    data = query(
+        """
+        SELECT
+            ep.*,
+            u.name
+        FROM exit_permits ep
+        JOIN users u
+            ON u.id = ep.user_id
+        WHERE ep.id=%s
+        """,
+        (permit_id,),
+        one=True
+    )
+
+    if not data:
+        return jsonify({
+            "success": False,
+            "message": "Data izin keluar tidak ditemukan."
+        }), 404
+
+    if data["status"] != STATUS_APPROVED:
+        return jsonify({
+            "success": False,
+            "message": "Status pengajuan sudah berubah, silakan muat ulang halaman."
+        }), 400
+
+    execute(
+        """
+        UPDATE exit_permits
+        SET
+            status=%s,
+            returned_at=%s,
+            finished_by=%s
+        WHERE id=%s
+        """,
+        (
+            STATUS_FINISHED,
+            datetime.now(),
+            session["user_id"],
+            permit_id
+        )
+    )
+
+    log_activity(
+        "FINISH_PERMIT",
+        target_type="exit_permit",
+        target_id=permit_id,
+        description=f"[Security] Menandai {data['name']} sudah kembali ke pondok (izin keluar #{permit_id})."
+    )
+
+    return jsonify({
+        "success": True,
+        "message": f"{data['name']} berhasil ditandai sudah kembali ke pondok."
+    })
 
 
 # ==========================================================

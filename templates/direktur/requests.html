@@ -1,0 +1,153 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Semua Pengajuan HP
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+    <div>
+        <h1 class="text-2xl font-bold sm:text-3xl">
+            Semua Pengajuan HP
+        </h1>
+        <p class="mt-1 text-gray-500">
+            Seluruh pengajuan peminjaman HP dari semua santri, di semua status.
+        </p>
+    </div>
+
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-lg overflow-hidden">
+        <div class="border-b bg-gradient-to-r from-slate-50 to-white px-4 py-5 sm:px-6 sm:py-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Daftar Pengajuan</h2>
+                    <p class="text-sm text-slate-500 mt-1">Klik "Detail" untuk melihat informasi lengkap pengajuan.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ url_for('direktur_requests') }}" class="rounded-xl px-4 py-2 text-sm font-medium transition {% if not current_status %}bg-blue-600 text-white{% else %}border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">Semua</a>
+                    <a href="{{ url_for('direktur_requests', status='PENDING') }}" class="rounded-xl px-4 py-2 text-sm font-medium transition {% if current_status == 'PENDING' %}bg-blue-600 text-white{% else %}border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">Menunggu</a>
+                    <a href="{{ url_for('direktur_requests', status='APPROVED') }}" class="rounded-xl px-4 py-2 text-sm font-medium transition {% if current_status == 'APPROVED' %}bg-blue-600 text-white{% else %}border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">Disetujui</a>
+                    <a href="{{ url_for('direktur_requests', status='REJECTED') }}" class="rounded-xl px-4 py-2 text-sm font-medium transition {% if current_status == 'REJECTED' %}bg-blue-600 text-white{% else %}border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">Ditolak</a>
+                    <a href="{{ url_for('direktur_requests', status='FINISHED') }}" class="rounded-xl px-4 py-2 text-sm font-medium transition {% if current_status == 'FINISHED' %}bg-blue-600 text-white{% else %}border border-slate-200 text-slate-600 hover:bg-slate-50{% endif %}">Selesai</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:px-6 sm:py-5">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+                <div class="xl:col-span-9">
+                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Pencarian </label>
+                    <div class="relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z" />
+                        </svg>
+                        <input id="searchRequest" type="text" placeholder="Cari nama santri..." class="w-full rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-4 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100" />
+                    </div>
+                </div>
+                <div class="xl:col-span-3">
+                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Tampilkan </label>
+                    <select id="pageLength" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1">
+            <div class="w-full overflow-x-auto bg">
+                <table id="requestsTable" class="min-w-[800px] w-full">
+                    <thead>
+                        <tr class="border-b border-slate-200 bg-slate-50">
+                            <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">No</th>
+                            <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Nama Santri</th>
+                            <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Waktu Pinjam</th>
+                            <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+                            <th class="px-4 py-3 sm:px-6 sm:py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% if requests_list %}
+                        {% for item in requests_list %}
+                        <tr class="transition hover:bg-slate-50">
+                            <td class="px-4 py-3 sm:px-6 sm:py-4">{{ loop.index }}</td>
+                            <td class="px-4 py-3 sm:px-6 sm:py-4">
+                                <div class="text-sm font-semibold text-slate-800 sm:text-base">{{ item.name }}</div>
+                            </td>
+                            <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-600 sm:px-6 sm:py-4">{{ item.start_datetime|format_datetime }}</td>
+                            <td class="px-4 py-3 sm:px-6 sm:py-4">{{ item.status|status_badge }}</td>
+                            <td class="px-4 py-3 sm:px-6 sm:py-4">
+                                <div class="flex justify-center">
+                                    <button type="button" class="detail-request-btn inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800" data-id="{{ item.id }}">Detail</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr><td colspan="5" class="py-16 text-center text-slate-500">Belum ada pengajuan.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="pagination" class="flex flex-col gap-4 border-t border-slate-200 bg-white px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
+            <p id="paginationInfo" class="text-sm text-slate-500 text-center"></p>
+            <div id="paginationButtons" class="flex flex-wrap justify-center gap-2 overflow-x-auto pb-1 md:justify-end"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script type="module">
+    import genericTable from "{{ url_for('static', filename='js/generic-table.js') }}";
+    genericTable({ searchColumnIndex: 1 });
+
+    document.querySelectorAll(".detail-request-btn").forEach((button) => {
+        button.addEventListener("click", async () => {
+            Swal.fire({
+                title: "Memuat data...",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => Swal.showLoading(),
+            });
+
+            try {
+                const response = await fetch(`/direktur/pengajuan-hp/${button.dataset.id}/detail`);
+                if (!response.ok) throw new Error("Gagal memuat data.");
+                const data = await response.json();
+
+                Swal.fire({
+                    icon: "info",
+                    title: `Pengajuan #${data.id} - ${data.name}`,
+                    html: `
+                        <div style="text-align:left" class="text-sm space-y-2">
+                            <p><span class="font-semibold text-slate-500">Alasan:</span> ${data.reason || "-"}</p>
+                            <p><span class="font-semibold text-slate-500">Status:</span> ${data.status}</p>
+                            <p><span class="font-semibold text-slate-500">Waktu Mulai:</span> ${data.start_datetime}</p>
+                            <p><span class="font-semibold text-slate-500">Waktu Selesai:</span> ${data.end_datetime}</p>
+                            ${data.approved_name ? `<p><span class="font-semibold text-slate-500">Disetujui oleh:</span> ${data.approved_name}</p>` : ""}
+                            ${data.rejected_name ? `<p><span class="font-semibold text-slate-500">Ditolak oleh:</span> ${data.rejected_name}</p>` : ""}
+                            ${data.finished_name ? `<p><span class="font-semibold text-slate-500">Diselesaikan oleh:</span> ${data.finished_name}</p>` : ""}
+                            ${data.pengasuhan_note ? `<p><span class="font-semibold text-slate-500">Catatan Pengasuhan:</span> ${data.pengasuhan_note}</p>` : ""}
+                            <p><span class="font-semibold text-slate-500">Diajukan:</span> ${data.created_at}</p>
+                        </div>
+                    `,
+                    confirmButtonText: "Tutup",
+                    confirmButtonColor: "#2563eb",
+                    width: 520,
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Gagal Memuat Data",
+                    confirmButtonColor: "#2563eb",
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

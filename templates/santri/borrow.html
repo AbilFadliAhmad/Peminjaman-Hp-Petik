@@ -34,231 +34,234 @@
       <!-- Form utama yang membungkus semua input dan Dropzone -->
       <form id="mainForm" method="POST" action="{% if is_edit %}{{ url_for('santri_edit_borrow') }}{% else %}{{ url_for('santri_borrow') }}{% endif %}" enctype="multipart/form-data" class="space-y-5">
         <div class="space-y-5">
-          <!-- DIV 1: Khusus Informasi / Petunjuk Penulisan Alasan -->
-          <div class="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:p-5 shadow-sm">
-            <div class="flex items-start gap-3 sm:gap-4">
-              <div class="flex h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-lg sm:text-xl text-white shadow-md">
-                📝
-              </div>
+  <!-- DIV 1: Khusus Informasi / Petunjuk Penulisan Alasan -->
+  <div class="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:p-5 shadow-sm">
+    <div class="flex items-start gap-3 sm:gap-4">
+      <div class="flex h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-lg sm:text-xl text-white shadow-md">
+        📝
+      </div>
 
-              <div class="flex-1 min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                  <h4 class="text-sm sm:text-base font-bold text-blue-950">Petunjuk Penulisan Alasan</h4>
-                  <span class="rounded-full bg-blue-200/80 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-blue-800">Bahan Pertimbangan</span>
-                </div>
-
-                <p class="mt-1.5 text-xs sm:text-sm leading-relaxed text-blue-900/80">
-                  Penjelasan alasan ini digunakan sebagai bahan pertimbangan oleh Pengasuhan. Pengajuan tetap dapat dikirim meskipun alasan Anda tidak terlalu panjang.
-                </p>
-
-                <ul class="mt-2.5 space-y-1.5 text-xs font-medium text-blue-800/90">
-                  <li class="flex items-start gap-2">
-                    <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
-                    <span>Disarankan mengisi <strong>lebih dari 50 karakter</strong> agar Pengasuhan dapat memahami keperluan Anda dengan lebih jelas dan mempercepat proses keputusan.</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
-                    <span>Sebutkan keperluan secara spesifik (misal: pendaftaran ujian, verifikasi akun, menghubungi orang tua, atau tugas akademik).</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- DIV 2: Khusus Form Input Textarea Alasan -->
-          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 shadow-sm">
-            <div class="mb-2 flex items-center justify-between">
-              <label for="reason" class="block text-xs sm:text-sm font-semibold text-slate-700">Detail Alasan Peminjaman</label>
-              <span id="reasonCounter" class="text-xs font-medium text-slate-400"></span>
-            </div>
-
-            <textarea
-              id="reason"
-              name="reason"
-              rows="6"
-              required
-              oninput="validateForm()"
-              placeholder="Jelaskan alasan peminjaman HP..."
-              class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-xs sm:text-sm text-slate-700 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 placeholder:text-slate-400"
-            >{{ borrow.reason if is_edit else "" }}</textarea>
-
-            <div id="reasonWarning" class="mt-3 hidden rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs sm:text-sm text-amber-700"></div>
-          </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <h4 class="text-sm sm:text-base font-bold text-blue-950">Petunjuk Penulisan Alasan</h4>
+          <span class="rounded-full bg-blue-200/80 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-blue-800">Bahan Pertimbangan</span>
         </div>
+
+        <p class="mt-1.5 text-xs sm:text-sm leading-relaxed text-blue-900/80">
+          Penjelasan alasan ini digunakan sebagai bahan pertimbangan oleh Pengasuhan. Pengajuan tetap dapat dikirim meskipun alasan Anda tidak terlalu panjang.
+        </p>
+
+        <ul class="mt-2.5 space-y-1.5 text-xs font-medium text-blue-800/90">
+          <li class="flex items-start gap-2">
+            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
+            <span>Disarankan mengisi <strong>lebih dari 50 karakter</strong> agar Pengasuhan dapat memahami keperluan Anda dengan lebih jelas dan mempercepat proses keputusan.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
+            <span>Sebutkan keperluan secara spesifik (misal: pendaftaran ujian, verifikasi akun, menghubungi orang tua, atau tugas akademik).</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIV 2: Khusus Form Input Textarea Alasan -->
+  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 shadow-sm">
+    <div class="mb-2 flex items-center justify-between">
+      <label for="reason" class="block text-xs sm:text-sm font-semibold text-slate-700">Detail Alasan Peminjaman</label>
+      <span id="reasonCounter" class="text-xs font-medium text-slate-400"></span>
+    </div>
+
+    <textarea
+      id="reason"
+      name="reason"
+      rows="6"
+      required
+      oninput="validateForm()"
+      placeholder="Jelaskan alasan peminjaman HP..."
+      class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-xs sm:text-sm text-slate-700 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 placeholder:text-slate-400"
+    >{{ borrow.reason if is_edit else "" }}</textarea>
+
+    <div id="reasonWarning" class="mt-3 hidden rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs sm:text-sm text-amber-700"></div>
+  </div>
+</div>
 
         <!-- Waktu & Durasi Peminjaman -->
         <div class="space-y-5">
-          <!-- DIV 1: Khusus Informasi / Petunjuk Waktu Peminjaman -->
-          <div class="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:p-5 shadow-sm">
-            <div class="flex items-start gap-3 sm:gap-4">
-              <div class="flex h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-lg sm:text-xl text-white shadow-md">
-                ⏰
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                  <h4 class="text-sm sm:text-base font-bold text-blue-950">Petunjuk Waktu Peminjaman</h4>
-                  <span class="rounded-full bg-blue-200/80 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-blue-800">Wajib Diisi</span>
-                </div>
-                <p class="mt-1.5 text-xs sm:text-sm leading-relaxed text-blue-900/80">
-                  Silakan tentukan jadwal peminjaman HP dengan teliti. Pengisian jadwal yang presisi membantu Pengasuhan memproses izin lebih cepat.
-                </p>
-                <ul class="mt-2.5 space-y-1.5 text-xs font-medium text-blue-800/90">
-                  <li class="flex items-start gap-2">
-                    <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
-                    <span>Disarankan mengajukan minimal <strong>1 jam sebelum</strong> waktu peminjaman dimulai.</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
-                    <span>Pastikan jam pengembalian sesuai dengan batas waktu yang disetujui untuk menghindari keterlambatan.</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- DIV 2: Khusus Form Input Tanggal & Jam -->
-          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 space-y-5 shadow-sm">
-            <div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-slate-500">Tanggal Mulai</label>
-                  <input value="{{ borrow.start_date if is_edit else '' }}" id="start_date" name="start_date" class="modern-input w-full" placeholder="Pilih tanggal mulai" required />
-                </div>
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-slate-500">Jam Mulai</label>
-                  <input value="{{ borrow.start_time if is_edit else '' }}" id="start_time" name="start_time" class="modern-input w-full" placeholder="Pilih jam mulai" required />
-                </div>
-              </div>
-            </div>
-
-            <hr class="border-slate-200/70" />
-
-            <div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-slate-500">Tanggal Selesai</label>
-                  <input value="{{ borrow.end_date if is_edit else '' }}" id="end_date" name="end_date" class="modern-input w-full" placeholder="Pilih tanggal selesai" required />
-                </div>
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-slate-500">Jam Selesai</label>
-                  <input value="{{ borrow.end_time if is_edit else '' }}" id="end_time" name="end_time" class="modern-input w-full" placeholder="Pilih jam selesai" required />
-                </div>
-              </div>
-            </div>
-          </div>
+  <!-- DIV 1: Khusus Informasi / Petunjuk Waktu Peminjaman -->
+  <!-- Waktu & Durasi Peminjaman -->
+<div class="space-y-5">
+  <!-- DIV 1: Khusus Informasi / Petunjuk Waktu Peminjaman -->
+  <div class="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:p-5 shadow-sm">
+    <div class="flex items-start gap-3 sm:gap-4">
+      <div class="flex h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-lg sm:text-xl text-white shadow-md">
+        ⏰
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <h4 class="text-sm sm:text-base font-bold text-blue-950">Petunjuk Waktu Peminjaman</h4>
+          <span class="rounded-full bg-blue-200/80 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-blue-800">Wajib Diisi</span>
         </div>
+        <p class="mt-1.5 text-xs sm:text-sm leading-relaxed text-blue-900/80">
+          Silakan tentukan jadwal peminjaman HP dengan teliti. Pengisian jadwal yang presisi membantu Pengasuhan memproses izin lebih cepat.
+        </p>
+        <ul class="mt-2.5 space-y-1.5 text-xs font-medium text-blue-800/90">
+          <li class="flex items-start gap-2">
+            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
+            <span>Disarankan mengajukan minimal <strong>1 jam sebelum</strong> waktu peminjaman dimulai.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
+            <span>Pastikan jam pengembalian sesuai dengan batas waktu yang disetujui untuk menghindari keterlambatan.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
-        <!-- Pesan Validasi -->
-        <div id="validationError" class="hidden rounded-2xl border border-red-300 bg-red-50 p-4 sm:p-5">
-          <div class="flex gap-3">
-            <div class="text-xl">❌</div>
-            <div>
-              <h4 class="text-sm sm:text-base font-semibold text-red-800">Data Belum Valid</h4>
-              <ul id="validationErrorList" class="mt-2 list-disc pl-5 text-xs sm:text-sm text-red-700 space-y-1"></ul>
-            </div>
-          </div>
-        </div>
-        <div id="timeWarning" class="hidden rounded-2xl border border-orange-300 bg-orange-50 p-4 sm:p-5">
-          <div class="flex gap-3">
-            <div class="text-xl">⚠️</div>
-            <div>
-              <h4 class="text-sm sm:text-base font-semibold text-orange-800">Pengajuan Terlalu Mepet</h4>
-              <p id="timeWarningText" class="mt-1 text-xs sm:text-sm text-orange-700"></p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tautkan Teman -->
-        <div class="space-y-5">
-          <!-- DIV 1: Khusus Informasi / Petunjuk Tautkan Teman -->
-          <div class="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:p-5 shadow-sm">
-            <div class="flex items-start gap-3 sm:gap-4">
-              <div class="flex h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-lg sm:text-xl text-white shadow-md">
-                👥
-              </div>
-
-              <div class="flex-1 min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                  <h4 class="text-sm sm:text-base font-bold text-blue-950">Petunjuk Tautkan Teman</h4>
-                  <span class="rounded-full bg-blue-200/80 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-blue-800">Opsional</span>
-                </div>
-
-                <p class="mt-1.5 text-xs sm:text-sm leading-relaxed text-blue-900/80">
-                  Fitur ini digunakan jika Anda meminjam HP yang bersangkutan dengan santri lain. Contohnya, jika Anda meminjam HP dengan alasan untuk membayar utang <strong>Riswan</strong>, Anda wajib menautkan nama Riswan di bawah ini.
-                </p>
-
-                <ul class="mt-2.5 space-y-1.5 text-xs font-medium text-blue-800/90">
-                  <li class="flex items-start gap-2">
-                    <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
-                    <span>Pengajuan akan dikirimkan ke teman terkait (contoh: Riswan) terlebih dahulu untuk dikonfirmasi.</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
-                    <span>Setelah disetujui oleh teman, pengajuan baru diteruskan ke pihak Pengasuhan untuk verifikasi akhir.</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- DIV 2: Khusus Form Input Cari Teman -->
-          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 shadow-sm">
-            <div class="relative">
-              <label class="mb-1.5 block text-xs sm:text-sm font-semibold text-slate-700">Cari & Pilih Teman</label>
-              <div class="relative">
-                <input id="friendSearch" type="text" autocomplete="off" placeholder="Ketik nama teman (contoh: Riswan)..." class="modern-input pr-10 w-full" />
-                <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-
-              <input type="hidden" id="friend_user_id" name="friend_user_id" value="{{ borrow.friend_user_id if is_edit and borrow.friend_user_id else '' }}" />
-
-              <!-- Dropdown -->
-              <div id="friendDropdown" class="absolute left-0 right-0 z-50 mt-2 hidden max-h-64 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
-                <!-- Hasil pencarian dimasukkan lewat JavaScript -->
-              </div>
-            </div>
-
-            <!-- Teman yang dipilih -->
-            <div id="selectedFriend" class="mt-4 hidden rounded-xl border border-indigo-200 bg-indigo-50 p-3 sm:p-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div id="selectedAvatar" class="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white text-sm">A</div>
-                  <div>
-                    <p id="selectedName" class="text-sm font-medium text-slate-800"></p>
-                  </div>
-                </div>
-                <button type="button" id="removeFriend" class="text-xs sm:text-sm font-medium text-red-600 hover:text-red-700 transition">Hapus</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Upload Dokumen Pendukung -->
+  <!-- DIV 2: Khusus Form Input Tanggal & Jam -->
+  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 space-y-5 shadow-sm">
+    <div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <div class="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:p-5 mb-4 shadow-sm">
-            <div class="flex items-start gap-3 sm:gap-4">
-              <div class="flex h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-lg sm:text-xl text-white shadow-md">
-                📁
-              </div>
-
-              <div class="flex-1 min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                  <h4 class="text-sm sm:text-base font-bold text-blue-950">Upload Dokumen Pendukung</h4>
-                  <span class="rounded-full bg-blue-200/80 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-blue-800">Opsional</span>
-                </div>
-
-                <p class="mt-1.5 text-xs sm:text-sm leading-relaxed text-blue-900/80">
-                  Lampirkan dokumen pendukung apabila diperlukan, misalnya surat tugas, surat izin, atau dokumen lain yang dapat membantu Pengasuhan dalam mempertimbangkan pengajuan.
-                </p>
-                <p class="mt-2 text-[11px] sm:text-xs font-semibold text-blue-800/80">Maksimal 10 file • 20 MB per file</p>
-              </div>
-            </div>
-          </div>
-
-          <input id="files" type="file" multiple name="files" />
+          <label class="mb-1 block text-xs font-medium text-slate-500">Tanggal Mulai</label>
+          <input value="{{ borrow.start_date if is_edit else '' }}" id="start_date" name="start_date" class="modern-input w-full" placeholder="Pilih tanggal mulai" required />
         </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium text-slate-500">Jam Mulai</label>
+          <input value="{{ borrow.start_time if is_edit else '' }}" id="start_time" name="start_time" class="modern-input w-full" placeholder="Pilih jam mulai" required />
+        </div>
+      </div>
+    </div>
+
+    <hr class="border-slate-200/70" />
+
+    <div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="mb-1 block text-xs font-medium text-slate-500">Tanggal Selesai</label>
+          <input value="{{ borrow.end_date if is_edit else '' }}" id="end_date" name="end_date" class="modern-input w-full" placeholder="Pilih tanggal selesai" required />
+        </div>
+        <div>
+          <label class="mb-1 block text-xs font-medium text-slate-500">Jam Selesai</label>
+          <input value="{{ borrow.end_time if is_edit else '' }}" id="end_time" name="end_time" class="modern-input w-full" placeholder="Pilih jam selesai" required />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pesan Validasi -->
+<div id="validationError" class="hidden rounded-2xl border border-red-300 bg-red-50 p-4 sm:p-5">
+  <div class="flex gap-3">
+    <div class="text-xl">❌</div>
+    <div>
+      <h4 class="text-sm sm:text-base font-semibold text-red-800">Data Belum Valid</h4>
+      <ul id="validationErrorList" class="mt-2 list-disc pl-5 text-xs sm:text-sm text-red-700 space-y-1"></ul>
+    </div>
+  </div>
+</div>
+<div id="timeWarning" class="hidden rounded-2xl border border-orange-300 bg-orange-50 p-4 sm:p-5">
+  <div class="flex gap-3">
+    <div class="text-xl">⚠️</div>
+    <div>
+      <h4 class="text-sm sm:text-base font-semibold text-orange-800">Pengajuan Terlalu Mepet</h4>
+      <p id="timeWarningText" class="mt-1 text-xs sm:text-sm text-orange-700"></p>
+    </div>
+  </div>
+</div>
+
+<!-- Tautkan Teman (Memiliki 2 DIV Terpisah) -->
+<div class="space-y-5">
+  <!-- DIV 1: Khusus Informasi / Petunjuk Tautkan Teman -->
+  <div class="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:p-5 shadow-sm">
+    <div class="flex items-start gap-3 sm:gap-4">
+      <div class="flex h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-lg sm:text-xl text-white shadow-md">
+        👥
+      </div>
+
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <h4 class="text-sm sm:text-base font-bold text-blue-950">Petunjuk Tautkan Teman</h4>
+          <span class="rounded-full bg-blue-200/80 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-blue-800">Opsional</span>
+        </div>
+
+        <p class="mt-1.5 text-xs sm:text-sm leading-relaxed text-blue-900/80">
+          Fitur ini digunakan jika Anda meminjam HP yang bersangkutan dengan santri lain. Contohnya, jika Anda meminjam HP dengan alasan untuk membayar utang <strong>Riswan</strong>, Anda wajib menautkan nama Riswan di bawah ini.
+        </p>
+
+        <ul class="mt-2.5 space-y-1.5 text-xs font-medium text-blue-800/90">
+          <li class="flex items-start gap-2">
+            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
+            <span>Pengajuan akan dikirimkan ke teman terkait (contoh: Riswan) terlebih dahulu untuk dikonfirmasi.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500"></span>
+            <span>Setelah disetujui oleh teman, pengajuan baru diteruskan ke pihak Pengasuhan untuk verifikasi akhir.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIV 2: Khusus Form Input Cari Teman -->
+  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 shadow-sm">
+    <div class="relative">
+      <label class="mb-1.5 block text-xs sm:text-sm font-semibold text-slate-700">Cari & Pilih Teman</label>
+      <div class="relative">
+        <input id="friendSearch" type="text" autocomplete="off" placeholder="Ketik nama teman (contoh: Riswan)..." class="modern-input pr-10 w-full" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+
+      <input type="hidden" id="friend_user_id" name="friend_user_id" value="{{ borrow.friend_user_id if is_edit and borrow.friend_user_id else '' }}" />
+
+      <!-- Dropdown -->
+      <div id="friendDropdown" class="absolute left-0 right-0 z-50 mt-2 hidden max-h-64 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
+        <!-- Hasil pencarian dimasukkan lewat JavaScript -->
+      </div>
+    </div>
+
+    <!-- Teman yang dipilih -->
+    <div id="selectedFriend" class="mt-4 hidden rounded-xl border border-indigo-200 bg-indigo-50 p-3 sm:p-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div id="selectedAvatar" class="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white text-sm">A</div>
+          <div>
+            <p id="selectedName" class="text-sm font-medium text-slate-800"></p>
+          </div>
+        </div>
+        <button type="button" id="removeFriend" class="text-xs sm:text-sm font-medium text-red-600 hover:text-red-700 transition">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Dokumen Pendukung -->
+<div>
+  <div class="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:p-5 mb-4 shadow-sm">
+    <div class="flex items-start gap-3 sm:gap-4">
+      <div class="flex h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-lg sm:text-xl text-white shadow-md">
+        📁
+      </div>
+
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <h4 class="text-sm sm:text-base font-bold text-blue-950">Upload Dokumen Pendukung</h4>
+          <span class="rounded-full bg-blue-200/80 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-blue-800">Opsional</span>
+        </div>
+
+        <p class="mt-1.5 text-xs sm:text-sm leading-relaxed text-blue-900/80">
+          Lampirkan dokumen pendukung apabila diperlukan, misalnya surat tugas, surat izin, atau dokumen lain yang dapat membantu Pengasuhan dalam mempertimbangkan pengajuan.
+        </p>
+        <p class="mt-2 text-[11px] sm:text-xs font-semibold text-blue-800/80">Maksimal 10 file • 20 MB per file</p>
+      </div>
+    </div>
+  </div>
+
+  <input id="files" type="file" multiple name="files" />
+</div>
 
         <div class="flex justify-end gap-3">
           <a href="{{ url_for('santri_izin_hp') }}" class="px-5 py-3 rounded-lg border">Batal</a>
@@ -268,9 +271,6 @@
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block script %}
 <script>
   function pad(value) {
     return String(value).padStart(2, "0");
@@ -386,6 +386,8 @@
   // Jadwal Istirahat (Koordinator & Pengasuhan)
   // ============================
 
+  // Menampung jadwal istirahat aktif yang diambil dari server.
+  // Format tiap item: { title, start_time: "HH:MM", end_time: "HH:MM" }
   let restSchedules = [];
 
   function timeToMinutes(value) {
@@ -393,6 +395,9 @@
     return (hour * 60) + minute;
   }
 
+  // Mengecek apakah sebuah jam ("HH:MM") berada di dalam
+  // rentang jadwal istirahat tertentu. Mendukung rentang yang
+  // melewati tengah malam (misal 22:00 - 04:00).
   function isTimeWithinSchedule(timeValue, schedule) {
     const target = timeToMinutes(timeValue);
     const start = timeToMinutes(schedule.start_time);
@@ -408,9 +413,13 @@
     return target >= start || target < end;
   }
 
+  // Mencari seluruh jadwal istirahat yang bersinggungan dengan
+  // jam mulai atau jam selesai yang dipilih santri.
   function findConflictingSchedules(sTime, eTime) {
     const conflicts = [];
+
     restSchedules.forEach((schedule) => {
+
       const hitsStart = sTime && isTimeWithinSchedule(sTime, schedule);
       const hitsEnd = eTime && isTimeWithinSchedule(eTime, schedule);
 
@@ -421,22 +430,29 @@
           hitsEnd,
         });
       }
+
     });
+
     return conflicts;
   }
 
   async function loadRestSchedules() {
     try {
       const response = await fetch("{{ url_for('api_rest_schedules') }}");
+
       if (!response.ok) return;
+
       restSchedules = await response.json();
+
+      // Setelah data jadwal istirahat siap, jalankan ulang validasi
+      // supaya form yang sudah terisi (mis. saat edit) ikut tervalidasi.
       validateForm();
     } catch (error) {
       console.error("Gagal memuat jadwal istirahat:", error);
     }
   }
 
-  // Cek Apakah Waktu Terlalu Mepet (< 1 Jam) - Hanya update styling dan text
+  // Cek Apakah Waktu Terlalu Mepet (< 1 Jam)
   function checkBorrowTime() {
     const startDateVal = document.getElementById("start_date").value;
     const startTimeVal = document.getElementById("start_time").value;
@@ -450,9 +466,13 @@
     const borrowStart = new Date(`${startDateVal}T${startTimeVal}`);
     const diffMinutes = (borrowStart - now) / 1000 / 60;
 
-    // Bagian error (<= 0) sekarang di-handle oleh validateForm,
-    // di sini kita hanya urus warning (< 60)
-    if (diffMinutes > 0 && diffMinutes < 60) {
+    if (diffMinutes <= 0) {
+      timeWarning.classList.remove("hidden");
+      timeWarningText.innerHTML = "Waktu peminjaman yang dipilih sudah lewat.";
+      return;
+    }
+
+    if (diffMinutes < 60) {
       timeWarning.classList.remove("hidden");
       timeWarningText.innerHTML = `Pengajuan dilakukan kurang dari <strong>1 jam</strong> sebelum waktu peminjaman. Pengasuhan mungkin membutuhkan waktu lebih untuk memproses.`;
     } else {
@@ -484,12 +504,6 @@
 
     const startObj = new Date(`${sDate}T${sTime}`);
     const endObj = new Date(`${eDate}T${eTime}`);
-    const now = new Date();
-
-    // Validasi waktu peminjaman di masa lalu
-    if (startObj <= now) {
-      errors.push("Waktu mulai peminjaman tidak boleh di masa lalu (sudah terlewat).");
-    }
 
     if (endObj <= startObj) {
       errors.push("Waktu pengembalian (selesai) harus lebih lambat dari waktu mulai peminjaman.");
@@ -499,6 +513,7 @@
     const conflicts = findConflictingSchedules(sTime, eTime);
 
     conflicts.forEach(({ schedule, hitsStart, hitsEnd }) => {
+
       const parts = [];
       if (hitsStart) parts.push("jam mulai");
       if (hitsEnd) parts.push("jam selesai");
@@ -506,6 +521,7 @@
       errors.push(
         `Peminjaman tidak dapat diajukan karena ${parts.join(" dan ")} bertabrakan dengan jadwal istirahat <strong>${schedule.title}</strong> (${schedule.start_time} - ${schedule.end_time}).`
       );
+
     });
 
     if (errors.length > 0) {
@@ -528,7 +544,7 @@
     if (submitButton.disabled) {
       return;
     }
-
+    
     const borrow = new Date(`${startDate.value}T${startTime.value}`);
     const now = new Date();
     const diffMinute = (borrow - now) / 1000 / 60;
@@ -538,6 +554,7 @@
     // ============================
     // Warning Alasan Terlalu Singkat
     // ============================
+
     if (reason.value.trim().length < MIN_REASON) {
       result = await Swal.fire({
         icon: "warning",
@@ -566,10 +583,11 @@
         cancelButtonColor: "#64748b",
       });
     }
+
+            // ============================
+            // Warning (< 1 jam)
     // ============================
-    // Warning (< 1 jam)
-    // ============================
-    else if (diffMinute > 0 && diffMinute < 60) {
+    else if (diffMinute < 60) {
       result = await Swal.fire({
         icon: "warning",
         title: "Pengajuan Terlalu Mepet",
@@ -597,8 +615,9 @@
         cancelButtonColor: "#64748b",
       });
     }
-    // ============================
-    // Konfirmasi Normal
+
+            // ============================
+            // Konfirmasi Normal
     // ============================
     else {
       result = await Swal.fire({
@@ -619,6 +638,7 @@
     // ============================
     // Loading
     // ============================
+
     Swal.fire({
       title: "{{ 'Menyimpan Perubahan' if is_edit else 'Mengirim Pengajuan' }}",
       html: "Mohon tunggu sebentar...",
@@ -636,6 +656,7 @@
 
   const friendSearch = document.getElementById("friendSearch");
   const friendDropdown = document.getElementById("friendDropdown");
+
   const friendUserId = document.getElementById("friend_user_id");
 
   const selectedFriend = document.getElementById("selectedFriend");
@@ -644,36 +665,53 @@
   const removeFriend = document.getElementById("removeFriend");
 
   friendSearch.addEventListener("input", function () {
+
     const keyword = this.value.trim().toLowerCase();
+
     friendDropdown.innerHTML = "";
 
     if (keyword.length === 0) {
+
       friendDropdown.classList.add("hidden");
+
       return;
+
     }
 
     const results = users.filter(user =>
+
             user.name.toLowerCase().includes(keyword)
+
     );
 
     if (results.length === 0) {
+
       friendDropdown.innerHTML = `
             <div class="px-4 py-3 text-sm text-slate-500">
                 Tidak ada santri ditemukan.
             </div>
         `;
+
       friendDropdown.classList.remove("hidden");
+
       return;
+
     }
 
     results.forEach(user => {
+
       const item = document.createElement("button");
+
       item.type = "button";
-      item.className = "flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-slate-50";
+
+      item.className =
+              "flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-slate-50";
+
       item.innerHTML = `
             <div class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">
                 ${user.name.charAt(0)}
             </div>
+
             <div>
                 <div class="font-medium text-slate-800">
                     ${user.name}
@@ -682,28 +720,48 @@
         `;
 
       item.onclick = () => {
+
         friendUserId.value = user.id;
+
         friendSearch.value = user.name;
+
         selectedFriend.classList.remove("hidden");
+
         selectedName.textContent = user.name;
-        selectedAvatar.textContent = user.name.charAt(0).toUpperCase();
+        selectedAvatar.textContent =
+                user.name.charAt(0).toUpperCase();
+
         friendDropdown.classList.add("hidden");
+
       };
+
       friendDropdown.appendChild(item);
+
     });
+
     friendDropdown.classList.remove("hidden");
+
   });
 
   removeFriend.addEventListener("click", () => {
+
     friendUserId.value = "";
+
     friendSearch.value = "";
+
     selectedFriend.classList.add("hidden");
+
   });
 
   document.addEventListener("click", function(e){
-    if(!friendDropdown.contains(e.target) && e.target !== friendSearch){
+
+    if(
+            !friendDropdown.contains(e.target) &&
+            e.target !== friendSearch
+    ){
       friendDropdown.classList.add("hidden");
     }
+
   });
 
   // Panggil fungsi saat halaman dimuat untuk memeriksa waktu peminjaman
@@ -711,4 +769,4 @@
   checkBorrowTime();
   loadRestSchedules();
 </script>
-{% endblock %}
+{% endblock %} {% block script %} {% endblock %}

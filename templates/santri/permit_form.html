@@ -62,9 +62,11 @@
             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-2xl">⚠️</div>
             <div class="flex-1">
               <h4 class="font-semibold text-red-900">Syarat & Ketentuan</h4>
-              <p class="mt-2 text-sm leading-6 text-red-800">{{ disclaimer_text }}</p>
 
-              <label class="mt-4 flex cursor-pointer items-start gap-3">
+              <!-- Ditambahkan style whitespace-pre-line agar format baris baru dari database terjaga -->
+              <p class="mt-2 text-sm leading-6 text-red-800 whitespace-pre-line">{{ disclaimer_text }}</p>
+
+              <label class="mt-4 flex cursor-pointer items-end gap-3">
                 <input id="agreement" name="agreement" type="checkbox" required class="mt-1 h-5 w-5 rounded border-red-300 text-red-600 focus:ring-4 focus:ring-red-100" />
                 <span class="text-sm font-medium text-red-900">Saya telah membaca dan menyetujui Syarat & Ketentuan di atas.</span>
               </label>

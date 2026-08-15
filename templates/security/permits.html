@@ -1,0 +1,214 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Verifikasi Izin Keluar
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+  <!-- Header Halaman -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <p class="text-sm font-medium text-blue-600">Verifikasi Izin Keluar</p>
+      <h1 class="text-2xl font-bold sm:text-3xl">Pemeriksaan Izin Keluar Santri</h1>
+      <p class="text-gray-500 mt-1">Periksa status izin keluar santri di gerbang, dan centang "Sudah Kembali" saat santri kembali ke pondok.</p>
+    </div>
+  </div>
+
+  <!-- Card Utama -->
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-lg overflow-hidden">
+    <!-- Header Card -->
+    <div class="border-b bg-gradient-to-r from-slate-50 to-white px-4 py-5 sm:px-6 sm:py-6">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">Daftar Izin Keluar</h2>
+          <p class="text-sm text-slate-500 mt-1">Menampilkan santri dengan izin keluar berstatus {{ "Disetujui (sedang keluar)" if current_status == "APPROVED" else current_status|lower }}.</p>
+        </div>
+
+        <button type="button" onclick="window.location.reload()" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-300 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v6h6M20 20v-6h-6M20 9A8 8 0 005.3 6M4 15a8 8 0 0014.7 3" />
+          </svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Bar Header: Pencarian, Status, & Tampilkan -->
+    <div class="border-b border-slate-200 bg-slate-50/70 px-4 py-4 sm:px-6 sm:py-5">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <!-- Filter 1: Pencarian -->
+        <div class="xl:col-span-6">
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Pencarian </label>
+          <div class="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z" />
+            </svg>
+            <input id="searchRequest" type="text" placeholder="Cari nama santri..." class="w-full rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-4 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100" />
+          </div>
+        </div>
+
+        <!-- Filter 2: Status (Disetujui & Sudah Kembali) -->
+        <div class="xl:col-span-3">
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Status </label>
+          <select id="statusFilter" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+          <option value="ALL" {% if current_status == 'ALL' %}selected{% endif %}>Semua Status</option>
+          <option value="APPROVED" {% if current_status == 'APPROVED' %}selected{% endif %}>Disetujui</option>
+          <option value="FINISHED" {% if current_status == 'FINISHED' %}selected{% endif %}>Sudah Kembali</option>
+        </select>
+        </div>
+
+        <!-- Filter 3: Tampilkan Jumlah Baris -->
+        <div class="xl:col-span-3">
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"> Tampilkan </label>
+          <select id="pageLength" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+            <option>10</option>
+            <option>25</option>
+            <option>50</option>
+            <option>100</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body Tabel -->
+    <div class="flex-1">
+      <div class="w-full overflow-x-auto">
+        <table id="requestsTable" class="min-w-[800px] w-full">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50">
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">No</th>
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Nama Santri</th>
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Berangkat</th>
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Batas Kembali</th>
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+              <th class="px-4 py-3 sm:px-6 sm:py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Sudah Kembali</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {% if permits %}
+            {% for item in permits %}
+            <tr class="transition hover:bg-slate-50" id="permit-row-{{ item.id }}">
+              <td class="px-4 py-3 sm:px-6 sm:py-4">{{ loop.index }}</td>
+              <td class="px-4 py-3 sm:px-6 sm:py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold">
+                    {{ item.name[:1]|upper }}
+                  </div>
+                  <div class="text-sm font-semibold text-slate-800 sm:text-base">{{ item.name }}</div>
+                </div>
+              </td>
+              <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-600 sm:px-6 sm:py-4 font-mono">{{ item.departure_date|format_datetime }}</td>
+              <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-600 sm:px-6 sm:py-4 font-mono">{{ item.return_deadline|format_datetime if item.return_deadline else "-" }}</td>
+              <td class="px-4 py-3 sm:px-6 sm:py-4" data-status-cell>{{ item.status|status_badge }}</td>
+              <td class="px-4 py-3 sm:px-6 sm:py-4">
+                <div class="flex justify-center">
+                  <input
+                    type="checkbox"
+                    class="return-checkbox h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                    data-id="{{ item.id }}"
+                    data-name="{{ item.name }}"
+                    {% if item.status == "FINISHED" %} checked disabled {% elif item.status != "APPROVED" %} disabled {% endif %}
+                  />
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr><td colspan="6" class="py-16 text-center text-slate-500">Tidak ada data izin keluar.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Paginasi -->
+    <div id="pagination" class="flex flex-col gap-4 border-t border-slate-200 bg-white px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
+      <p id="paginationInfo" class="text-sm text-slate-500 text-center"></p>
+      <div id="paginationButtons" class="flex flex-wrap justify-center gap-2 overflow-x-auto pb-1 md:justify-end"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script type="module">
+  import genericTable from "{{ url_for('static', filename='js/generic-table.js') }}";
+  genericTable({ searchColumnIndex: 1 });
+
+  document.querySelectorAll(".return-checkbox").forEach((checkbox) => {
+    checkbox.addEventListener("change", async function () {
+
+      if (!this.checked) {
+        return;
+      }
+
+      const result = await Swal.fire({
+        icon: "question",
+        title: "Tandai Sudah Kembali?",
+        text: `${this.dataset.name} akan ditandai sudah kembali ke pondok.`,
+        showCancelButton: true,
+        confirmButtonText: "Ya, Tandai",
+        cancelButtonText: "Batal",
+        confirmButtonColor: "#16a34a",
+        cancelButtonColor: "#64748b",
+      });
+
+      if (!result.isConfirmed) {
+        this.checked = false;
+        return;
+      }
+
+      this.disabled = true;
+
+      try {
+        const response = await fetch(`/security/izin-keluar/${this.dataset.id}/finish`, {
+          method: "POST",
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Gagal menandai santri sudah kembali.");
+        }
+
+        const row = document.getElementById(`permit-row-${this.dataset.id}`);
+        const statusCell = row?.querySelector("[data-status-cell]");
+        if (statusCell) {
+          statusCell.innerHTML = '<span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Selesai</span>';
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: data.message,
+          confirmButtonColor: "#16a34a",
+          timer: 1800,
+          showConfirmButton: false,
+        });
+
+      } catch (error) {
+        this.checked = false;
+        this.disabled = false;
+        Swal.fire({
+          icon: "error",
+          title: "Gagal",
+          text: error.message,
+          confirmButtonColor: "#2563eb",
+        });
+      }
+    });
+  });
+
+  document.getElementById("statusFilter").addEventListener("change", function () {
+      const selectedStatus = this.value;
+      const url = new URL(window.location.href);
+
+      // Set atau perbarui query parameter 'status'
+      url.searchParams.set("status", selectedStatus);
+
+      // Redirect ke URL baru dengan parameter query yang diperbarui
+      window.location.href = url.toString();
+    });
+</script>
+{% endblock %}
